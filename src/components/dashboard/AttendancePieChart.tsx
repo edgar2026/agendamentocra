@@ -15,34 +15,35 @@ const COLORS = ['hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--mut
 export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChartProps) {
   const dateObj = parseISO(selectedDate);
 
-  const getTableName = () => {
-    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
-    return "agendamentos";
-  };
-
-  const tableName = getTableName();
-
   const { data, isLoading, error } = useQuery<Array<{ name: string; value: number; percentage: string }>>({
     queryKey: ["attendancePieChartData", selectedDate, viewMode],
     queryFn: async () => {
-      let baseQuery = supabase.from(tableName).select("compareceu", { count: "exact" });
+      let baseQueryAgendamentos = supabase.from("agendamentos").select("compareceu");
+      let baseQueryHistorico = supabase.from("agendamentos_historico").select("compareceu");
 
       if (viewMode === 'daily') {
-        baseQuery = baseQuery.eq("data_agendamento", selectedDate);
+        baseQueryAgendamentos = baseQueryAgendamentos.eq("data_agendamento", selectedDate);
+        baseQueryHistorico = baseQueryHistorico.eq("data_agendamento", selectedDate);
       } else { // monthly
         const monthStart = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const monthEnd = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
-        baseQuery = baseQuery.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
+        baseQueryAgendamentos = baseQueryAgendamentos.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
+        baseQueryHistorico = baseQueryHistorico.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
       }
 
-      const { data: rawData, count: totalCount, error } = await baseQuery;
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+        baseQueryAgendamentos,
+        baseQueryHistorico
+      ]);
 
-      if (error) throw new Error(error.message);
-      if (!rawData || totalCount === null) return [];
+      if (errorAgendamentos) throw new Error(errorAgendamentos.message);
+      if (errorHistorico) throw new Error(errorHistorico.message);
 
-      const compareceuCount = rawData.filter(item => item.compareceu === true).length;
-      const naoCompareceuCount = rawData.filter(item => item.compareceu === false).length;
-      const pendenteCount = rawData.filter(item => item.compareceu === null).length;
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
+
+      const compareceuCount = combinedRawData.filter(item => item.compareceu === true).length;
+      const naoCompareceuCount = combinedRawData.filter(item => item.compareceu === false).length;
+      const pendenteCount = combinedRawData.filter(item => item.compareceu === null).length;
 
       const total = compareceuCount + naoCompareceuCount + pendenteCount;
 

@@ -16,42 +16,53 @@ interface TopAttendantsListProps {
 export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage }: TopAttendantsListProps) {
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
 
-  const getTableName = () => {
-    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
-    return "agendamentos";
-  };
-
-  const tableName = getTableName();
-
   const { data, isLoading, error } = useQuery<AttendantPerformance[]>({
     queryKey: ["topAttendants", viewMode, formattedDate],
     queryFn: async () => {
-      let query;
+      let queryAgendamentos;
+      let queryHistorico;
+      const dateObj = selectedDate ? parseISO(format(selectedDate, "yyyy-MM-dd")) : new Date();
+
       if (viewMode === 'daily') {
-        query = supabase
-          .from(tableName)
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("atendente")
+          .eq("data_agendamento", formattedDate);
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
           .select("atendente")
           .eq("data_agendamento", formattedDate);
       } else { // monthly
-        const dateObj = selectedDate ? parseISO(format(selectedDate, "yyyy-MM-dd")) : new Date();
         const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
-        query = supabase
-          .from(tableName)
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("atendente")
+          .gte("data_agendamento", startOfMonth)
+          .lte("data_agendamento", endOfMonth);
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
           .select("atendente")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
       }
 
-      const { data: rawData, error } = await query
-        .not("atendente", "is", null)
-        .not("atendente", "eq", "");
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+        queryAgendamentos.not("atendente", "is", null).not("atendente", "eq", ""),
+        queryHistorico.not("atendente", "is", null).not("atendente", "eq", "")
+      ]);
 
-      if (error) throw new Error(error.message);
-      if (!rawData) return [];
+      if (errorAgendamentos) throw new Error(errorAgendamentos.message);
+      if (errorHistorico) throw new Error(errorHistorico.message);
 
-      const counts = rawData.reduce((acc, { atendente }) => {
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
+
+      if (!combinedRawData) return [];
+
+      const counts = combinedRawData.reduce((acc, { atendente }) => {
         if (atendente) {
           acc[atendente] = (acc[atendente] || 0) + 1;
         }

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, setHours, setMinutes, setSeconds } from "date-fns";
+import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
 
@@ -14,21 +14,22 @@ interface AppointmentsTrendChartProps {
 export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsTrendChartProps) {
   const dateObj = parseISO(selectedDate);
 
-  const getTableName = () => {
-    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
-    return "agendamentos";
-  };
-
-  const tableName = getTableName();
-
   const { data, isLoading, error } = useQuery<Array<{ label: string; count: number }>>({
     queryKey: ["appointmentsTrendData", selectedDate, viewMode],
     queryFn: async () => {
-      let query;
+      let queryAgendamentos;
+      let queryHistorico;
 
       if (viewMode === 'daily') {
-        query = supabase
-          .from(tableName)
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("horario")
+          .eq("data_agendamento", selectedDate)
+          .not("horario", "is", null)
+          .not("horario", "eq", "");
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
           .select("horario")
           .eq("data_agendamento", selectedDate)
           .not("horario", "is", null)
@@ -36,20 +37,32 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
       } else { // monthly
         const monthStart = format(startOfMonth(dateObj), "yyyy-MM-dd");
         const monthEnd = format(endOfMonth(dateObj), "yyyy-MM-dd");
-        query = supabase
-          .from(tableName)
+        
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("data_agendamento")
+          .gte("data_agendamento", monthStart)
+          .lte("data_agendamento", monthEnd);
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
           .select("data_agendamento")
           .gte("data_agendamento", monthStart)
           .lte("data_agendamento", monthEnd);
       }
 
-      const { data: rawData, error } = await query;
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+        queryAgendamentos,
+        queryHistorico
+      ]);
 
-      if (error) throw new Error(error.message);
-      if (!rawData) return [];
+      if (errorAgendamentos) throw new Error(errorAgendamentos.message);
+      if (errorHistorico) throw new Error(errorHistorico.message);
+
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
 
       if (viewMode === 'daily') {
-        const hourlyCounts = rawData.reduce((acc, { horario }) => {
+        const hourlyCounts = combinedRawData.reduce((acc, { horario }) => {
           if (horario) {
             const hour = horario.split(':')[0]; // Get only the hour part
             acc[hour] = (acc[hour] || 0) + 1;
@@ -64,7 +77,7 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
         });
         return formattedData;
       } else { // monthly
-        const dailyCounts = rawData.reduce((acc, { data_agendamento }) => {
+        const dailyCounts = combinedRawData.reduce((acc, { data_agendamento }) => {
           if (data_agendamento) {
             acc[data_agendamento] = (acc[data_agendamento] || 0) + 1;
           }

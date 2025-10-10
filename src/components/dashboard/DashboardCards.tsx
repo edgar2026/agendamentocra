@@ -15,14 +15,6 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
   const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
-  const getTableName = () => {
-    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
-    // Isso inclui dados de dias passados que não foram movidos para 'agendamentos_historico'.
-    return "agendamentos";
-  };
-
-  const tableName = getTableName();
-
   const getBaseQuery = (table: string) => {
     let query = supabase.from(table).select("*", { count: "exact" });
     if (viewMode === 'daily') {
@@ -33,50 +25,49 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
     return query;
   };
 
+  const fetchCombinedCount = async (filter?: (query: any) => any) => {
+    let queryAgendamentos = getBaseQuery("agendamentos");
+    let queryHistorico = getBaseQuery("agendamentos_historico");
+
+    if (filter) {
+      queryAgendamentos = filter(queryAgendamentos);
+      queryHistorico = filter(queryHistorico);
+    }
+
+    const [{ count: countAgendamentos, error: errorAgendamentos }, { count: countHistorico, error: errorHistorico }] = await Promise.all([
+      queryAgendamentos,
+      queryHistorico
+    ]);
+
+    if (errorAgendamentos) throw new Error(errorAgendamentos.message);
+    if (errorHistorico) throw new Error(errorHistorico.message);
+
+    return (countAgendamentos || 0) + (countHistorico || 0);
+  };
+
   const { data: totalAgendamentos, isLoading: isLoadingTotal } = useQuery<number>({
     queryKey: ["dashboardTotalAgendamentos", selectedDate, viewMode],
-    queryFn: async () => {
-      const { count, error } = await getBaseQuery(tableName);
-      if (error) throw new Error(error.message);
-      return count || 0;
-    },
+    queryFn: () => fetchCombinedCount(),
   });
 
   const { data: comparecimentos, isLoading: isLoadingComparecimentos } = useQuery<number>({
     queryKey: ["dashboardComparecimentos", selectedDate, viewMode],
-    queryFn: async () => {
-      const { count, error } = await getBaseQuery(tableName).eq("compareceu", true);
-      if (error) throw new Error(error.message);
-      return count || 0;
-    },
+    queryFn: () => fetchCombinedCount(query => query.eq("compareceu", true)),
   });
 
   const { data: faltas, isLoading: isLoadingFaltas } = useQuery<number>({
     queryKey: ["dashboardFaltas", selectedDate, viewMode],
-    queryFn: async () => {
-      const { count, error } = await getBaseQuery(tableName).eq("compareceu", false);
-      if (error) throw new Error(error.message);
-      return count || 0;
-    },
+    queryFn: () => fetchCombinedCount(query => query.eq("compareceu", false)),
   });
 
-  // Novas consultas para Agendados (da planilha) e Expontâneos (manual)
   const { data: agendadosCount, isLoading: isLoadingAgendados } = useQuery<number>({
     queryKey: ["dashboardAgendadosCount", selectedDate, viewMode],
-    queryFn: async () => {
-      const { count, error } = await getBaseQuery(tableName).eq("origem_agendamento", "PLANILHA");
-      if (error) throw new Error(error.message);
-      return count || 0;
-    },
+    queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "PLANILHA")),
   });
 
   const { data: expontaneosCount, isLoading: isLoadingExpontaneos } = useQuery<number>({
     queryKey: ["dashboardExpontaneosCount", selectedDate, viewMode],
-    queryFn: async () => {
-      const { count, error } = await getBaseQuery(tableName).eq("origem_agendamento", "MANUAL");
-      if (error) throw new Error(error.message);
-      return count || 0;
-    },
+    queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "MANUAL")),
   });
 
   const periodText = viewMode === 'daily' ? `para ${displayDate}` : `para ${format(dateObj, "MM/yyyy")}`;

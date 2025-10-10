@@ -15,42 +15,53 @@ interface ServiceTypeRankingListProps {
 export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMessage }: ServiceTypeRankingListProps) {
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
 
-  const getTableName = () => {
-    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
-    return "agendamentos";
-  };
-
-  const tableName = getTableName();
-
   const { data, isLoading, error } = useQuery<Array<{ tipo_atendimento: string; count: number }>>({
     queryKey: ["serviceTypeRanking", viewMode, formattedDate],
     queryFn: async () => {
-      let query;
+      let queryAgendamentos;
+      let queryHistorico;
+      const dateObj = selectedDate ? parseISO(format(selectedDate, "yyyy-MM-dd")) : new Date();
+
       if (viewMode === 'daily') {
-        query = supabase
-          .from(tableName)
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("tipo_atendimento")
+          .eq("data_agendamento", formattedDate);
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
           .select("tipo_atendimento")
           .eq("data_agendamento", formattedDate);
       } else { // monthly
-        const dateObj = selectedDate ? parseISO(format(selectedDate, "yyyy-MM-dd")) : new Date();
         const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
-        query = supabase
-          .from(tableName)
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("tipo_atendimento")
+          .gte("data_agendamento", startOfMonth)
+          .lte("data_agendamento", endOfMonth);
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
           .select("tipo_atendimento")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
       }
 
-      const { data: rawData, error } = await query
-        .not("tipo_atendimento", "is", null)
-        .not("tipo_atendimento", "eq", "");
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+        queryAgendamentos.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
+        queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", "")
+      ]);
 
-      if (error) throw new Error(error.message);
-      if (!rawData) return [];
+      if (errorAgendamentos) throw new Error(errorAgendamentos.message);
+      if (errorHistorico) throw new Error(errorHistorico.message);
 
-      const counts = rawData.reduce((acc, { tipo_atendimento }) => {
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
+
+      if (!combinedRawData) return [];
+
+      const counts = combinedRawData.reduce((acc, { tipo_atendimento }) => {
         if (tipo_atendimento) {
           acc[tipo_atendimento] = (acc[tipo_atendimento] || 0) + 1;
         }
