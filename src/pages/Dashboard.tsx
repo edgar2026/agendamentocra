@@ -1,13 +1,14 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DashboardCards } from "@/components/dashboard/DashboardCards";
 import { ServiceTypeChart } from "@/components/dashboard/ServiceTypeChart";
-import { AppointmentsTrendChart } from "@/components/dashboard/AppointmentsTrendChart"; // Importar o novo componente
+import { AppointmentsTrendChart } from "@/components/dashboard/AppointmentsTrendChart";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { TopAttendantsList } from "@/components/dashboard/TopAttendantsList";
 import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankingList";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList"; // Importar o novo componente
 
 const queryClient = new QueryClient();
 
@@ -42,7 +43,7 @@ const DashboardPanel = () => {
       </div>
       <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} /> {/* Usando o novo componente */}
+        <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
         <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -58,6 +59,10 @@ const DashboardPanel = () => {
           selectedDate={selectedDate}
           emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
         />
+      </div>
+      {/* Nova seção para a lista de atendentes e guichês */}
+      <div className="grid grid-cols-1">
+        <AttendantGuicheList />
       </div>
     </div>
   );
