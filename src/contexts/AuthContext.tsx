@@ -7,7 +7,8 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
-  loading: boolean;
+  loading: boolean; // True enquanto a sessão inicial está sendo determinada
+  profileLoading: boolean; // True enquanto o perfil está sendo buscado
   logout: () => Promise<void>;
 }
 
@@ -17,12 +18,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Carregamento inicial da sessão
+  const [profileLoading, setProfileLoading] = useState(false); // Carregamento dos dados do perfil
+
+  // Função para buscar o perfil do usuário
+  const fetchUserProfile = async (userId: string) => {
+    setProfileLoading(true);
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, avatar_url, role, updated_at')
+        .eq('id', userId)
+        .single();
+      
+      if (profileError) throw profileError;
+      setProfile(profileData as Profile);
+    } catch (error) {
+      console.error("AuthContext: Erro ao buscar perfil:", error);
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const initializeSession = async () => {
+    // 1. Lida com o carregamento inicial da sessão
+    const getInitialSession = async () => {
       try {
-        // 1. Ativamente busca a sessão inicial.
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
 
@@ -30,16 +52,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const currentUser = initialSession?.user ?? null;
         setUser(currentUser);
 
+        // Define loading como false *depois* que a sessão e o usuário são determinados,
+        // mas *antes* que a busca do perfil possa potencialmente atrasar.
+        setLoading(false); 
+
         if (currentUser) {
-          // 2. Se houver usuário, busca o perfil.
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, avatar_url, role, updated_at')
-            .eq('id', currentUser.id)
-            .single();
-          
-          if (profileError) throw profileError;
-          setProfile(profileData as Profile);
+          fetchUserProfile(currentUser.id); // Busca o perfil em segundo plano
         } else {
           setProfile(null);
         }
@@ -48,45 +66,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(null);
         setUser(null);
         setProfile(null);
-      } finally {
-        // 3. GARANTE que o carregamento termine, não importa o que aconteça.
-        setLoading(false);
+        setLoading(false); // Garante que loading seja false mesmo em caso de erro
       }
     };
 
-    initializeSession();
+    getInitialSession();
 
-    // 4. Ouve por mudanças futuras (login/logout) após a carga inicial.
+    // 2. Ouve por mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       setSession(newSession);
       const currentUser = newSession?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
-        try {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, avatar_url, role, updated_at')
-            .eq('id', currentUser.id)
-            .single();
-          if (profileError) throw profileError;
-          setProfile(profileData as Profile);
-        } catch (error) {
-          console.error("AuthContext: Erro ao atualizar perfil no listener:", error);
-          setProfile(null);
-        }
+        fetchUserProfile(currentUser.id); // Busca o perfil na mudança de estado de autenticação
       } else {
         setProfile(null);
       }
+      // Não é necessário definir loading(false) aqui, pois é para o carregamento inicial.
+      // O componente App reagirá às mudanças em `session` e `user`.
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Array de dependências vazio significa que isso é executado uma vez na montagem
 
   const logout = async () => {
     await supabase.auth.signOut();
+    // Limpa o perfil ao fazer logout
+    setProfile(null);
   };
 
   const value = {
@@ -94,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     profile,
     loading,
+    profileLoading,
     logout,
   };
 
