@@ -120,7 +120,8 @@ const AgendamentosPanel = () => {
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
 
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'monthly'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'monthly'] });
@@ -129,7 +130,8 @@ const AgendamentosPanel = () => {
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'monthly'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'monthly', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'monthly', today] });
-      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'monthly'] }); // Invalida o novo gráfico
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'monthly'] });
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'monthly'] }); // Invalida o novo gráfico de comparecimento
     },
     onError: (error) => {
       toast.error(`Erro ao arquivar: ${error.message}`);

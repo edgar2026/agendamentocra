@@ -144,7 +144,8 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
       onOpenChange(false);
     },
     onError: (error) => {

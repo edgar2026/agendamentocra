@@ -128,7 +128,8 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
     },
     onError: (error) => {
       toast.error(`Erro ao criar agendamento: ${error.message}`);
