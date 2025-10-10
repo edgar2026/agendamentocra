@@ -10,7 +10,7 @@ import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamento
 import { ImportAgendamentos } from "@/components/agendamentos/ImportAgendamentos";
 import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon } from "lucide-react"; // Renomeado Clock para ClockIcon
+import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -168,7 +168,7 @@ const AgendamentosPanel = () => {
     <div className="space-y-4 relative">
       {triageAttendantNames && (
         <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
-          <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É: 
+          <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É:&nbsp;
             <span className="font-bold">
               {triageAttendantNames}
             </span>
