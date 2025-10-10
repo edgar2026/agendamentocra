@@ -144,7 +144,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] });
+      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
       queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
       onOpenChange(false);
     },
@@ -264,7 +264,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
                   <SelectItem value="loading" disabled>Carregando atendentes...</SelectItem>
                 ) : (
                   atendentes?.map((att) => (
-                    <SelectItem key={att.id} value={att.id}>
+                    <SelectItem key={att.id} value={att.name}>
                       {att.name}
                     </SelectItem>
                   ))

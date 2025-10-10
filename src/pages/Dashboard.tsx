@@ -9,7 +9,6 @@ import { TopAttendantsList } from "@/components/dashboard/TopAttendantsList";
 import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankingList";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
-import { AppointmentSourceChart } from "@/components/dashboard/AppointmentSourceChart";
 import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart"; // Importar o novo gráfico
 
 const queryClient = new QueryClient();
@@ -49,7 +48,7 @@ const DashboardPanel = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
         <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
-        <AppointmentSourceChart selectedDate={formattedDate} viewMode={viewMode} />
+        {/* <AppointmentSourceChart selectedDate={formattedDate} viewMode={viewMode} /> */}
       </div>
 
       {/* Nova seção para listas e o novo gráfico de comparecimento */}
