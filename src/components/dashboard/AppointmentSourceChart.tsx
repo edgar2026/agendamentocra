@@ -58,10 +58,11 @@ export function AppointmentSourceChart({ selectedDate, viewMode }: AppointmentSo
         return acc;
       }, {} as Record<string, number>);
 
+      // Garantir que ambas as categorias estejam sempre presentes, mesmo com valor 0
       const formattedData = [
-        { name: "Planilha", value: counts["PLANILHA"] || 0 }, // Usar 'PLANILHA'
-        { name: "Manual", value: counts["MANUAL"] || 0 },     // Usar 'MANUAL'
-      ].filter(item => item.value > 0); // Apenas mostra itens com valor > 0
+        { name: "Planilha", value: counts["PLANILHA"] || 0 },
+        { name: "Manual", value: counts["MANUAL"] || 0 },
+      ];
 
       return formattedData;
     },
@@ -96,13 +97,16 @@ export function AppointmentSourceChart({ selectedDate, viewMode }: AppointmentSo
 
   const periodText = viewMode === 'daily' ? `para ${format(dateObj, "dd/MM/yyyy")}` : `para ${format(dateObj, "MM/yyyy")}`;
 
+  // Filtrar dados para o gráfico apenas se o valor for maior que 0, mas manter a legenda completa
+  const chartData = data?.filter(item => item.value > 0);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Origem dos Agendamentos</CardTitle>
       </CardHeader>
       <CardContent className="pt-2">
-        {data && data.length === 0 ? (
+        {data && data.every(item => item.value === 0) ? ( // Verifica se todos os valores são zero
           <div className="flex items-center justify-center h-[250px] text-muted-foreground">
             Nenhum agendamento registrado {periodText}.
           </div>
@@ -110,7 +114,7 @@ export function AppointmentSourceChart({ selectedDate, viewMode }: AppointmentSo
           <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
-                data={data}
+                data={chartData} // Usa chartData filtrado para o Pie
                 cx="50%"
                 cy="50%"
                 labelLine={false}
@@ -119,12 +123,12 @@ export function AppointmentSourceChart({ selectedDate, viewMode }: AppointmentSo
                 dataKey="value"
                 nameKey="name"
               >
-                {data?.map((entry, index) => (
+                {chartData?.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip />
-              <Legend />
+              <Legend /> {/* A legenda usará os nomes definidos no data, que agora sempre inclui ambos */}
             </PieChart>
           </ResponsiveContainer>
         )}
