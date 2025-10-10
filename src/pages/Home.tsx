@@ -10,7 +10,7 @@ import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamento
 import { ImportAgendamentos } from "@/components/agendamentos/ImportAgendamentos";
 import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Loader2, Archive, RefreshCw } from "lucide-react";
+import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Importando Card
 
 const queryClient = new QueryClient();
 
@@ -198,15 +199,37 @@ const AgendamentosPanel = () => {
         </div>
       )}
 
-      <div className="mb-4 p-4 bg-card rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</h2>
-        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm sm:text-base">
-          <span className="font-bold text-primary">Total: {totalAgendamentosCount}</span>
-          <span className="text-success">Compareceu: {compareceuCount}</span>
-          <span className="text-destructive">Não Compareceu: {naoCompareceuCount}</span>
-          <span className="text-muted-foreground">Pendente: {pendenteCount}</span>
-        </div>
-      </div>
+      <Card className="mb-4 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Total */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-primary/10 text-primary">
+            <CalendarDays className="h-6 w-6 mb-1" />
+            <span className="text-sm font-medium">Total</span>
+            <span className="text-2xl font-bold">{totalAgendamentosCount}</span>
+          </div>
+          {/* Compareceu */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-success/10 text-success">
+            <CheckCircle2 className="h-6 w-6 mb-1" />
+            <span className="text-sm font-medium">Compareceu</span>
+            <span className="text-2xl font-bold">{compareceuCount}</span>
+          </div>
+          {/* Não Compareceu */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-destructive/10 text-destructive">
+            <XCircle className="h-6 w-6 mb-1" />
+            <span className="text-sm font-medium">Não Compareceu</span>
+            <span className="text-2xl font-bold">{naoCompareceuCount}</span>
+          </div>
+          {/* Pendente */}
+          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-muted/10 text-muted-foreground">
+            <Clock className="h-6 w-6 mb-1" />
+            <span className="text-sm font-medium">Pendente</span>
+            <span className="text-2xl font-bold">{pendenteCount}</span>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center justify-end gap-4">
         {hasUpdates && (
