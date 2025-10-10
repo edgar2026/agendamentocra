@@ -231,43 +231,47 @@ const AgendamentosPanel = () => {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end gap-4">
-        {hasUpdates && (
-          <Button onClick={handleRefresh} variant="outline" className="animate-pulse border-primary text-primary">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Atualizar Lista
-          </Button>
-        )}
-        {canManageData && (
-          <>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={totalAgendamentosCount === 0}>
-                  <Archive className="mr-2 h-4 w-4" />
-                  Arquivar e Limpar Dia
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Esta ação moverá todos os {totalAgendamentosCount} agendamentos de hoje para o histórico e limpará a tela atual.
-                    Isso não pode ser desfeito. Você deve fazer isso apenas no final do dia, antes de importar uma nova planilha.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => archiveMutation.mutate()} disabled={archiveMutation.isPending}>
-                    {archiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                    Confirmar e Arquivar
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <ImportAgendamentos />
-          </>
-        )}
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-4"> {/* Alterado para justify-between e flex-wrap */}
+        {/* Grupo de botões da esquerda (Admin/Triagem) */}
+        <div className="flex flex-wrap items-center gap-4">
+          {hasUpdates && (
+            <Button onClick={handleRefresh} variant="outline" className="animate-pulse border-primary text-primary">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Atualizar Lista
+            </Button>
+          )}
+          {canManageData && (
+            <>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={totalAgendamentosCount === 0}>
+                    <Archive className="mr-2 h-4 w-4" />
+                    Arquivar e Limpar Dia
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta ação moverá todos os {totalAgendamentosCount} agendamentos de hoje para o histórico e limpará a tela atual.
+                      Isso não pode ser desfeito. Você deve fazer isso apenas no final do dia, antes de importar uma nova planilha.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => archiveMutation.mutate()} disabled={archiveMutation.isPending}>
+                      {archiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      Confirmar e Arquivar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <ImportAgendamentos />
+            </>
+          )}
+        </div>
 
+        {/* Botão Novo Agendamento (sempre à direita) */}
         <Button onClick={() => setIsAddAgendamentoDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Agendamento
