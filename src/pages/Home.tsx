@@ -8,7 +8,7 @@ import { DataTable } from "@/components/agendamentos/data-table";
 import { AddAgendamentoDialog } from "@/components/agendamentos/AddAgendamentoDialog";
 import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamentoDialog";
 import { ImportAgendamentos } from "@/components/agendamentos/ImportAgendamentos";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
 import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -24,8 +24,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DatePicker } from "@/components/ui/date-picker"; // Importar DatePicker
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"; // Importar ToggleGroup
 
 const queryClient = new QueryClient();
 
@@ -38,29 +36,12 @@ const AgendamentosPanel = () => {
   const [localAgendamentos, setLocalAgendamentos] = useState<Agendamento[]>([]);
   const [hasUpdates, setHasUpdates] = useState(false);
 
-  // Estados para os filtros de data
-  const [selectedFilterDate, setSelectedFilterDate] = useState<Date | undefined>(new Date());
-  const [filterViewMode, setFilterViewMode] = useState<'daily' | 'monthly'>('daily');
-
-  const formattedFilterDate = selectedFilterDate ? format(selectedFilterDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
-  const dateObjForFilter = selectedFilterDate ? parseISO(formattedFilterDate) : new Date();
-  const startOfMonthForFilter = format(new Date(dateObjForFilter.getFullYear(), dateObjForFilter.getMonth(), 1), "yyyy-MM-dd");
-  const endOfMonthForFilter = format(new Date(dateObjForFilter.getFullYear(), dateObjForFilter.getMonth() + 1, 0), "yyyy-MM-dd");
-
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
-    queryKey: ["agendamentos", formattedFilterDate, filterViewMode], // queryKey atualizado para incluir os filtros
+    queryKey: ["agendamentos"],
     queryFn: async () => {
-      let query = supabase
+      const { data, error } = await supabase
         .from("agendamentos")
-        .select("*");
-
-      if (filterViewMode === 'daily') {
-        query = query.eq('data_agendamento', formattedFilterDate);
-      } else { // monthly
-        query = query.gte("data_agendamento", startOfMonthForFilter).lte("data_agendamento", endOfMonthForFilter);
-      }
-
-      const { data, error } = await query
+        .select("*")
         .order("data_agendamento", { ascending: false })
         .order("nome_aluno", { ascending: true });
 
@@ -82,7 +63,6 @@ const AgendamentosPanel = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
-          // Qualquer mudança na tabela agendamentos deve acionar uma atualização
           setHasUpdates(true);
         }
       )
@@ -119,7 +99,6 @@ const AgendamentosPanel = () => {
 
   const archiveMutation = useMutation({
     mutationFn: async () => {
-      // A função Edge ainda arquiva agendamentos para a data 'today'
       const { data, error } = await supabase.functions.invoke('archive-agendamentos', {
         body: { date: today },
       });
@@ -128,9 +107,8 @@ const AgendamentosPanel = () => {
     },
     onSuccess: (data) => {
       toast.success(data.message || "Agendamentos arquivados e tela limpa!");
-      refetch(); // Refetch all agendamentos after archiving
+      refetch();
       queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
-      // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
@@ -169,7 +147,6 @@ const AgendamentosPanel = () => {
     [atendentes, isLoadingAtendentes, profile]
   );
 
-  // Estes contadores agora refletem os agendamentos FILTRADOS
   const totalAgendamentosCount = localAgendamentos.length;
   const compareceuCount = localAgendamentos.filter(ag => ag.compareceu === true).length;
   const naoCompareceuCount = localAgendamentos.filter(ag => ag.compareceu === false).length;
@@ -193,12 +170,6 @@ const AgendamentosPanel = () => {
     return profile.role === 'ADMIN' || profile.role === 'TRIAGEM';
   }, [profile]);
 
-  const handleFilterViewModeChange = (value: 'daily' | 'monthly') => {
-    if (value) {
-      setFilterViewMode(value);
-    }
-  };
-
   return (
     <div className="space-y-4 relative">
       {triageAttendantNames && (
@@ -212,29 +183,8 @@ const AgendamentosPanel = () => {
       )}
 
       <Card className="mb-4 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold">Filtrar Agendamentos</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row justify-end items-center gap-4">
-          <ToggleGroup type="single" value={filterViewMode} onValueChange={handleFilterViewModeChange} className="flex-shrink-0">
-            <ToggleGroupItem value="daily" aria-label="Visualização Diária" variant="outline">
-              Dia
-            </ToggleGroupItem>
-            <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline">
-              Mês
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <DatePicker
-            date={selectedFilterDate}
-            setDate={setSelectedFilterDate}
-            placeholder={filterViewMode === 'daily' ? "Selecione a data" : "Selecione o mês"}
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Agendamentos Filtrados</CardTitle> {/* Título atualizado */}
+          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
