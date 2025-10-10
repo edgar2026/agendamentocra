@@ -29,7 +29,7 @@ type SignInFormData = z.infer<typeof signInSchema>;
 
 const Login = () => {
   const { session } = useAuth();
-  const [isSignUp, setIsSignUp] = useState(true); // Start with sign-up view
+  const [isSignUp, setIsSignUp] = useState(false); // Alterado para false para iniciar com o login
   const [loading, setLoading] = useState(false);
 
   const {
