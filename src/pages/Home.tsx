@@ -194,12 +194,16 @@ const AgendamentosPanel = () => {
         </div>
       )}
       {triageAttendantNames && (
-        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
-          <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É: <span className="font-bold">{triageAttendantNames}</span></p>
+        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm overflow-hidden"> {/* Adicionado overflow-hidden */}
+          <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É: 
+            <span className="font-bold inline-block animate-slide-text-horizontal whitespace-nowrap"> {/* Adicionado inline-block, animate-slide-text-horizontal e whitespace-nowrap */}
+              {triageAttendantNames}
+            </span>
+          </p>
         </div>
       )}
 
-      <Card className="mb-4 shadow-sm animate-subtle-sway"> {/* Adicionado animate-subtle-sway aqui */}
+      <Card className="mb-4 shadow-sm"> {/* Removido animate-subtle-sway */}
         <CardHeader className="pb-0"> {/* Ajustado para pb-0 */}
           <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
         </CardHeader>
