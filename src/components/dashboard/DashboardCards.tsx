@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, CheckCircle2, XCircle, PlusCircle } from "lucide-react"; // Import PlusCircle
+import { CalendarDays, CheckCircle2, XCircle, PlusCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 interface DashboardCardsProps {
@@ -91,12 +91,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
-          <CardTitle className="text-base font-medium">Total de Agendamentos</CardTitle> {/* Ajustado text-base */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
+          <CardTitle className="text-lg font-medium">Total de Agendamentos</CardTitle> {/* Ajustado text-lg */}
           <CalendarDays className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
-          <div className="text-2xl font-bold text-primary">
+        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+          <div className="text-3xl font-bold text-primary"> {/* Ajustado text-3xl */}
             {isLoadingTotal ? "Carregando..." : totalAgendamentos}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -106,12 +106,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       </Card>
 
       <Card className="shadow-elevated border-l-4 border-success transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
-          <CardTitle className="text-base font-medium">Comparecimentos</CardTitle> {/* Ajustado text-base */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
+          <CardTitle className="text-lg font-medium">Comparecimentos</CardTitle> {/* Ajustado text-lg */}
           <CheckCircle2 className="h-4 w-4 text-success" />
         </CardHeader>
-        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
-          <div className="text-2xl font-bold text-success">
+        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+          <div className="text-3xl font-bold text-success"> {/* Ajustado text-3xl */}
             {isLoadingComparecimentos ? "Carregando..." : comparecimentos}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -121,12 +121,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       </Card>
 
       <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
-          <CardTitle className="text-base font-medium">Faltas</CardTitle> {/* Ajustado text-base */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
+          <CardTitle className="text-lg font-medium">Faltas</CardTitle> {/* Ajustado text-lg */}
           <XCircle className="h-4 w-4 text-destructive" />
         </CardHeader>
-        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
-          <div className="text-2xl font-bold text-destructive">
+        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+          <div className="text-3xl font-bold text-destructive"> {/* Ajustado text-3xl */}
             {isLoadingFaltas ? "Carregando..." : faltas}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -137,12 +137,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Novo cartão para Agendados (da planilha) */}
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
-          <CardTitle className="text-base font-medium">Agendados (Planilha)</CardTitle> {/* Ajustado text-base */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
+          <CardTitle className="text-lg font-medium">Agendados (Planilha)</CardTitle> {/* Ajustado text-lg */}
           <CalendarDays className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
-          <div className="text-2xl font-bold text-primary">
+        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+          <div className="text-3xl font-bold text-primary"> {/* Ajustado text-3xl */}
             {isLoadingAgendados ? "Carregando..." : agendadosCount}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -153,12 +153,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Novo cartão para Expontâneos (manual) */}
       <Card className="shadow-elevated border-l-4 border-secondary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
-          <CardTitle className="text-base font-medium">Expontâneos (Manual)</CardTitle> {/* Ajustado text-base */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
+          <CardTitle className="text-lg font-medium">Expontâneos (Manual)</CardTitle> {/* Ajustado text-lg */}
           <PlusCircle className="h-4 w-4 text-secondary-foreground" />
         </CardHeader>
-        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
-          <div className="text-2xl font-bold text-secondary-foreground">
+        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+          <div className="text-3xl font-bold text-secondary-foreground"> {/* Ajustado text-3xl */}
             {isLoadingExpontaneos ? "Carregando..." : expontaneosCount}
           </div>
           <p className="text-xs text-muted-foreground">

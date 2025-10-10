@@ -101,7 +101,7 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
       <CardHeader>
         <CardTitle>Atendimentos por Tipo</CardTitle>
       </CardHeader>
-      <CardContent className="pt-2"> {/* Ajustado pt-2 */}
+      <CardContent className="pt-2"> {/* Mantido pt-2 */}
         {data && data.length === 0 ? (
           <div className="flex items-center justify-center h-[200px] text-muted-foreground">
             Nenhum atendimento por tipo registrado {periodText}.

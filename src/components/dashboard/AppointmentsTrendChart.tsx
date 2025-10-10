@@ -120,9 +120,9 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{chartTitle}</CardTitle>
+        <CardTitle>Tendência de Agendamentos</CardTitle>
       </CardHeader>
-      <CardContent className="pt-2"> {/* Ajustado pt-2 */}
+      <CardContent className="pt-2"> {/* Mantido pt-2 */}
         {data && data.length === 0 ? (
           <div className="flex items-center justify-center h-[250px] text-muted-foreground">
             Nenhum agendamento registrado {periodText}.

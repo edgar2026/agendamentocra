@@ -100,16 +100,16 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-2"> {/* Ajustado pt-2 */}
+      <CardContent className="pt-0"> {/* Ajustado pt-0 */}
         {data && data.length > 0 ? (
-          <ul className="space-y-2"> {/* Aumentado o espaçamento entre os itens */}
+          <ul className="space-y-1"> {/* Reduzido o espaçamento entre os itens */}
             {data.map((item, index) => (
-              <li key={item.atendente} className="flex items-center gap-4 text-base p-2 rounded-md bg-muted/30"> {/* Removido justify-between, adicionado gap-4 */}
-                <span className="font-semibold text-foreground flex-grow"> {/* Adicionado flex-grow */}
+              <li key={item.atendente} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30"> {/* Reduzido gap e padding */}
+                <span className="font-semibold text-foreground flex-grow">
                   {index === 0 ? "🏆 " : ""}
                   {item.atendente}
                 </span>
-                <span className="text-primary font-medium">{item.count} atendimentos</span>
+                <span className="text-primary font-bold">{item.count} atendimentos</span> {/* Adicionado font-bold */}
               </li>
             ))}
           </ul>
