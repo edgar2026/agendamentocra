@@ -89,13 +89,13 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const periodText = viewMode === 'daily' ? `para ${displayDate}` : `para ${format(dateObj, "MM/yyyy")}`;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"> {/* Ajustado o layout da grade */}
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total de Agendamentos</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
+          <CardTitle className="text-base font-medium">Total de Agendamentos</CardTitle> {/* Ajustado text-base */}
           <CalendarDays className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
           <div className="text-2xl font-bold text-primary">
             {isLoadingTotal ? "Carregando..." : totalAgendamentos}
           </div>
@@ -106,11 +106,11 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       </Card>
 
       <Card className="shadow-elevated border-l-4 border-success transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Comparecimentos</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
+          <CardTitle className="text-base font-medium">Comparecimentos</CardTitle> {/* Ajustado text-base */}
           <CheckCircle2 className="h-4 w-4 text-success" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
           <div className="text-2xl font-bold text-success">
             {isLoadingComparecimentos ? "Carregando..." : comparecimentos}
           </div>
@@ -121,11 +121,11 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       </Card>
 
       <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Faltas</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
+          <CardTitle className="text-base font-medium">Faltas</CardTitle> {/* Ajustado text-base */}
           <XCircle className="h-4 w-4 text-destructive" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
           <div className="text-2xl font-bold text-destructive">
             {isLoadingFaltas ? "Carregando..." : faltas}
           </div>
@@ -137,11 +137,11 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Novo cartão para Agendados (da planilha) */}
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Agendados (Planilha)</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
+          <CardTitle className="text-base font-medium">Agendados (Planilha)</CardTitle> {/* Ajustado text-base */}
           <CalendarDays className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
           <div className="text-2xl font-bold text-primary">
             {isLoadingAgendados ? "Carregando..." : agendadosCount}
           </div>
@@ -153,12 +153,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Novo cartão para Expontâneos (manual) */}
       <Card className="shadow-elevated border-l-4 border-secondary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Expontâneos (Manual)</CardTitle>
-          <PlusCircle className="h-4 w-4 text-secondary-foreground" /> {/* Alterado para text-secondary-foreground */}
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1"> {/* Ajustado pb-1 */}
+          <CardTitle className="text-base font-medium">Expontâneos (Manual)</CardTitle> {/* Ajustado text-base */}
+          <PlusCircle className="h-4 w-4 text-secondary-foreground" />
         </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-secondary-foreground"> {/* Alterado para text-secondary-foreground */}
+        <CardContent className="pt-2"> {/* Ajustado pt-2 */}
+          <div className="text-2xl font-bold text-secondary-foreground">
             {isLoadingExpontaneos ? "Carregando..." : expontaneosCount}
           </div>
           <p className="text-xs text-muted-foreground">

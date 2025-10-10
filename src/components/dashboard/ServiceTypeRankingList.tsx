@@ -99,16 +99,16 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2"> {/* Ajustado pt-2 */}
         {data && data.length > 0 ? (
-          <ul className="space-y-3"> {/* Aumentado o espaçamento entre os itens */}
+          <ul className="space-y-2"> {/* Aumentado o espaçamento entre os itens */}
             {data.map((item, index) => (
-              <li key={item.tipo_atendimento} className="flex items-center justify-between text-base p-2 rounded-md bg-muted/30"> {/* Adicionado padding, rounded e background sutil */}
-                <span className="font-semibold text-foreground"> {/* Texto mais escuro e negrito */}
+              <li key={item.tipo_atendimento} className="flex items-center gap-4 text-base p-2 rounded-md bg-muted/30"> {/* Removido justify-between, adicionado gap-4 */}
+                <span className="font-semibold text-foreground flex-grow"> {/* Adicionado flex-grow */}
                   {index === 0 ? "🏆 " : ""}
                   {item.tipo_atendimento}
                 </span>
-                <span className="text-primary font-medium">{item.count} atendimentos</span> {/* Cor primária para o número */}
+                <span className="text-primary font-medium">{item.count} atendimentos</span>
               </li>
             ))}
           </ul>

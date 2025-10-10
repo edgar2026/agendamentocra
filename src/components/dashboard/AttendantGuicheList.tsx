@@ -50,12 +50,12 @@ export function AttendantGuicheList() {
         <CardTitle className="text-sm font-medium">Atendentes e Guichês</CardTitle>
         <Users className="h-4 w-4 text-primary" />
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2"> {/* Ajustado pt-2 */}
         {atendentes && atendentes.length > 0 ? (
           <ul className="space-y-2">
             {atendentes.map((attendant) => (
-              <li key={attendant.id} className="flex items-center justify-between text-base p-2 rounded-md bg-muted/30">
-                <span className="font-semibold text-foreground">{attendant.name}</span>
+              <li key={attendant.id} className="flex items-center gap-4 text-base p-2 rounded-md bg-muted/30"> {/* Removido justify-between, adicionado gap-4 */}
+                <span className="font-semibold text-foreground flex-grow">{attendant.name}</span> {/* Adicionado flex-grow */}
                 <span className="text-primary font-medium">{attendant.guiche || "Não atribuído"}</span>
               </li>
             ))}
