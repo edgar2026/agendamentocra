@@ -43,7 +43,7 @@ const AgendamentosPanel = () => {
         .from("agendamentos")
         .select("*")
         .eq('data_agendamento', today)
-        .order("horario", { ascending: true });
+        .order("nome_aluno", { ascending: true }); // Alterado para ordenar por nome_aluno
 
       if (error) throw new Error(error.message);
       return data || [];
