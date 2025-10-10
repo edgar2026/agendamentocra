@@ -10,6 +10,7 @@ import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankin
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
 import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Importando componentes Card
 
 const queryClient = new QueryClient();
 
@@ -27,31 +28,35 @@ const DashboardPanel = () => {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row justify-end items-center gap-4 mb-4">
-        <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="flex-shrink-0">
-          <ToggleGroupItem value="daily" aria-label="Visualização Diária">
-            Dia
-          </ToggleGroupItem>
-          <ToggleGroupItem value="monthly" aria-label="Visualização Mensal">
-            Mês
-          </ToggleGroupItem>
-        </ToggleGroup>
-        <DatePicker
-          date={selectedDate}
-          setDate={setSelectedDate}
-          placeholder={viewMode === 'daily' ? "Selecione a data do Dashboard" : "Selecione o mês do Dashboard"}
-        />
-      </div>
+      <Card className="mb-4 shadow-sm"> {/* Envolvendo a seleção de período em um Card */}
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-semibold">Seleção de Período</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col sm:flex-row justify-end items-center gap-4">
+          <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="flex-shrink-0">
+            <ToggleGroupItem value="daily" aria-label="Visualização Diária" variant="outline"> {/* Adicionado variant="outline" */}
+              Dia
+            </ToggleGroupItem>
+            <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline"> {/* Adicionado variant="outline" */}
+              Mês
+            </ToggleGroupItem>
+          </ToggleGroup>
+          <DatePicker
+            date={selectedDate}
+            setDate={setSelectedDate}
+            placeholder={viewMode === 'daily' ? "Selecione a data do Dashboard" : "Selecione o mês do Dashboard"}
+          />
+        </CardContent>
+      </Card>
+      
       <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
       
-      {/* Seção de gráficos principais com 3 colunas em telas grandes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
         <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
-        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} /> {/* Gráfico de pizza movido para cá */}
+        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} />
       </div>
 
-      {/* Seção para listas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <TopAttendantsList
           title={`Ranking de Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
@@ -65,7 +70,7 @@ const DashboardPanel = () => {
           selectedDate={selectedDate}
           emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
         />
-        <AttendantGuicheList /> {/* Mantido aqui ou ajustado conforme necessário */}
+        <AttendantGuicheList />
       </div>
     </div>
   );
