@@ -10,7 +10,7 @@ import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamento
 import { ImportAgendamentos } from "@/components/agendamentos/ImportAgendamentos";
 import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon } from "lucide-react"; // Renomeado Clock para ClockIcon
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -23,7 +23,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Importando Card
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Clock } from "@/components/layout/Clock"; // Importando o novo componente Clock
 
 const queryClient = new QueryClient();
 
@@ -43,7 +44,7 @@ const AgendamentosPanel = () => {
         .from("agendamentos")
         .select("*")
         .eq('data_agendamento', today)
-        .order("nome_aluno", { ascending: true }); // Alterado para ordenar por nome_aluno
+        .order("nome_aluno", { ascending: true });
 
       if (error) throw new Error(error.message);
       return data || [];
@@ -56,7 +57,6 @@ const AgendamentosPanel = () => {
     }
   }, [agendamentos]);
 
-  // Efeito para ouvir mudanças em tempo real
   useEffect(() => {
     const channel = supabase
       .channel('agendamentos-changes')
@@ -65,7 +65,6 @@ const AgendamentosPanel = () => {
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
           const record = (payload.new || payload.old) as Partial<Agendamento>;
-          // Apenas mostra a notificação se a mudança for para a data de hoje
           if (record && record.data_agendamento === today) {
             setHasUpdates(true);
           }
@@ -73,7 +72,6 @@ const AgendamentosPanel = () => {
       )
       .subscribe();
 
-    // Limpa a inscrição ao desmontar o componente
     return () => {
       supabase.removeChannel(channel);
     };
@@ -89,7 +87,7 @@ const AgendamentosPanel = () => {
     staleTime: Infinity,
   });
 
-  const { data: triageAttendants, isLoading: isLoadingTriageAttendants, error: triageAttendantsError } = useQuery<Array<{ name: string, guiche: string | null }>>({
+  const { data: triageAttendants } = useQuery<Array<{ name: string, guiche: string | null }>>({
     queryKey: ["triageAttendants"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -113,26 +111,7 @@ const AgendamentosPanel = () => {
     onSuccess: (data) => {
       toast.success(data.message || "Agendamentos arquivados e tela limpa!");
       refetch();
-
-      queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
-      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
-
-      queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'monthly'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'monthly'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'monthly'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'monthly'] });
-      queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'monthly'] });
-      queryClient.invalidateQueries({ queryKey: ["topAttendants", 'monthly', today] });
-      queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'monthly', today] });
-      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'monthly'] }); // Removido: Invalida o novo gráfico de origem
-      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'monthly'] }); // Invalida o novo gráfico de comparecimento
+      queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
     },
     onError: (error) => {
       toast.error(`Erro ao arquivar: ${error.message}`);
@@ -188,15 +167,10 @@ const AgendamentosPanel = () => {
 
   return (
     <div className="space-y-4 relative">
-      {isLoadingTriageAttendants && (
-        <div className="flex items-center justify-center p-2 text-muted-foreground">
-          Carregando atendentes da triagem...
-        </div>
-      )}
       {triageAttendantNames && (
-        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm overflow-hidden">
+        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
           <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É: 
-            <span className="font-bold inline-block animate-slide-text-horizontal whitespace-nowrap">
+            <span className="font-bold">
               {triageAttendantNames}
             </span>
           </p>
@@ -204,31 +178,28 @@ const AgendamentosPanel = () => {
       )}
 
       <Card className="mb-4 shadow-sm">
-        <CardHeader className="pb-0">
+        <CardHeader className="pb-0 flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
+          <Clock />
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-          {/* Total */}
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
             <CalendarDays className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Total</span>
             <span className="text-xl font-bold">{totalAgendamentosCount}</span>
           </div>
-          {/* Compareceu */}
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/10 text-success">
             <CheckCircle2 className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Compareceu</span>
             <span className="text-xl font-bold">{compareceuCount}</span>
           </div>
-          {/* Não Compareceu */}
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/10 text-destructive">
             <XCircle className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Não Compareceu</span>
             <span className="text-xl font-bold">{naoCompareceuCount}</span>
           </div>
-          {/* Pendente */}
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/10 text-muted-foreground">
-            <Clock className="h-5 w-5 mb-1" />
+            <ClockIcon className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Pendente</span>
             <span className="text-xl font-bold">{pendenteCount}</span>
           </div>
@@ -236,7 +207,6 @@ const AgendamentosPanel = () => {
       </Card>
 
       <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-        {/* Grupo de botões da esquerda (Admin/Triagem) */}
         <div className="flex flex-wrap items-center gap-4">
           {hasUpdates && (
             <Button onClick={handleRefresh} variant="outline" className="animate-pulse border-primary text-primary">
@@ -275,7 +245,6 @@ const AgendamentosPanel = () => {
           )}
         </div>
 
-        {/* Botão Novo Agendamento (sempre à direita) */}
         <Button onClick={() => setIsAddAgendamentoDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Agendamento
