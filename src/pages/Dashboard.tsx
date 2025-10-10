@@ -8,7 +8,8 @@ import { format, parseISO } from "date-fns";
 import { TopAttendantsList } from "@/components/dashboard/TopAttendantsList";
 import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankingList";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList"; // Importar o novo componente
+import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
+import { AppointmentSourceChart } from "@/components/dashboard/AppointmentSourceChart"; // Importar o novo componente
 
 const queryClient = new QueryClient();
 
@@ -42,11 +43,16 @@ const DashboardPanel = () => {
         />
       </div>
       <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      {/* Nova seção de gráficos com 3 colunas em telas grandes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
         <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
+        <AppointmentSourceChart selectedDate={formattedDate} viewMode={viewMode} /> {/* Novo gráfico */}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      {/* Nova seção para listas, com AttendantGuicheList em uma coluna menor */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <TopAttendantsList
           title={`Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
           viewMode={viewMode}
@@ -59,10 +65,7 @@ const DashboardPanel = () => {
           selectedDate={selectedDate}
           emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
         />
-      </div>
-      {/* Nova seção para a lista de atendentes e guichês */}
-      <div className="grid grid-cols-1">
-        <AttendantGuicheList />
+        <AttendantGuicheList /> {/* Agora em uma coluna de 1/3 em telas grandes */}
       </div>
     </div>
   );
