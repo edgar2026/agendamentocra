@@ -1,4 +1,5 @@
 export type AgendamentoStatus = 'AGENDADO' | 'COMPARECEU' | 'NAO_COMPARECEU';
+export type OrigemAgendamento = 'PLANILHA' | 'MANUAL'; // Novo tipo para a origem
 
 export interface Agendamento {
   id: string;
@@ -19,7 +20,8 @@ export interface Agendamento {
   tipo?: string;
   compareceu?: boolean | null;
   observacoes?: string;
-  status_atendimento?: string;
+  status_atendimento?: string; // Este campo agora será apenas o status de atendimento (AGENDADO, COMPARECEU, NAO_COMPARECEU)
+  origem_agendamento?: OrigemAgendamento; // Novo campo para a origem do agendamento
 }
 
 export interface Atendente {

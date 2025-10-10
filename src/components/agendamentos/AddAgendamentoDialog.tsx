@@ -128,6 +128,7 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
     },
     onError: (error) => {
       toast.error(`Erro ao criar agendamento: ${error.message}`);
@@ -154,6 +155,7 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
       horario: data.horario || currentTime,
       status: "AGENDADO",
       status_atendimento: "EXPONTANEO",
+      origem_agendamento: "MANUAL", // Define a origem como 'MANUAL'
       atendente: selectedAttendantName, // Salvar o NOME do atendente
       tipo_atendimento: data.tipo_atendimento ? data.tipo_atendimento.toUpperCase() : undefined, // Garante que o tipo de atendimento seja maiúsculo
     };

@@ -44,6 +44,7 @@ export function ImportAgendamentos() {
       toast.success(`${count} agendamentos importados com sucesso!`);
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
       queryClient.invalidateQueries({ queryKey: ['serviceTypes'] }); // Invalida a query de serviceTypes
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData"] }); // Invalida o novo gráfico
     },
     onError: (error) => {
       toast.error(`Erro ao salvar no banco de dados: ${error.message}`);
@@ -118,6 +119,7 @@ export function ImportAgendamentos() {
             }
             newRow.data_agendamento = today; // Define a data como hoje
             newRow.status_atendimento = 'AGENDADO'; // Define o status_atendimento como 'AGENDADO'
+            newRow.origem_agendamento = 'PLANILHA'; // Define a origem como 'PLANILHA'
             return newRow;
           });
 

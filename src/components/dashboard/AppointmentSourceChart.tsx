@@ -10,7 +10,7 @@ interface AppointmentSourceChartProps {
   viewMode: 'daily' | 'monthly';
 }
 
-const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))']; // Cores para AGENDADO e EXPONTANEO
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))']; // Cores para PLANILHA e MANUAL
 
 export function AppointmentSourceChart({ selectedDate, viewMode }: AppointmentSourceChartProps) {
   const dateObj = parseISO(selectedDate);
@@ -32,35 +32,35 @@ export function AppointmentSourceChart({ selectedDate, viewMode }: AppointmentSo
       if (viewMode === 'daily') {
         query = supabase
           .from(table)
-          .select("status_atendimento")
+          .select("origem_agendamento") // Usar a nova coluna
           .eq("data_agendamento", selectedDate);
       } else { // monthly
         const monthStart = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const monthEnd = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
         query = supabase
           .from(table)
-          .select("status_atendimento")
+          .select("origem_agendamento") // Usar a nova coluna
           .gte("data_agendamento", monthStart)
           .lte("data_agendamento", endOfMonth);
       }
 
       const { data: rawData, error } = await query
-        .not("status_atendimento", "is", null)
-        .not("status_atendimento", "eq", "");
+        .not("origem_agendamento", "is", null)
+        .not("origem_agendamento", "eq", "");
 
       if (error) throw new Error(error.message);
       if (!rawData) return [];
 
-      const counts = rawData.reduce((acc, { status_atendimento }) => {
-        if (status_atendimento) {
-          acc[status_atendimento] = (acc[status_atendimento] || 0) + 1;
+      const counts = rawData.reduce((acc, { origem_agendamento }) => {
+        if (origem_agendamento) {
+          acc[origem_agendamento] = (acc[origem_agendamento] || 0) + 1;
         }
         return acc;
       }, {} as Record<string, number>);
 
       const formattedData = [
-        { name: "Planilha", value: counts["AGENDADO"] || 0 },
-        { name: "Manual", value: counts["EXPONTANEO"] || 0 },
+        { name: "Planilha", value: counts["PLANILHA"] || 0 }, // Usar 'PLANILHA'
+        { name: "Manual", value: counts["MANUAL"] || 0 },     // Usar 'MANUAL'
       ].filter(item => item.value > 0); // Apenas mostra itens com valor > 0
 
       return formattedData;

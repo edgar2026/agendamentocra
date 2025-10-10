@@ -120,6 +120,7 @@ const AgendamentosPanel = () => {
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
 
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'monthly'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'monthly'] });
@@ -128,6 +129,7 @@ const AgendamentosPanel = () => {
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'monthly'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'monthly', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'monthly', today] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'monthly'] }); // Invalida o novo gráfico
     },
     onError: (error) => {
       toast.error(`Erro ao arquivar: ${error.message}`);
@@ -186,11 +188,6 @@ const AgendamentosPanel = () => {
       {isLoadingTriageAttendants && (
         <div className="flex items-center justify-center p-2 text-muted-foreground">
           Carregando atendentes da triagem...
-        </div>
-      )}
-      {triageAttendantsError && (
-        <div className="p-2 text-red-500">
-          Erro ao carregar atendentes da triagem: {triageAttendantsError.message}
         </div>
       )}
       {triageAttendantNames && (

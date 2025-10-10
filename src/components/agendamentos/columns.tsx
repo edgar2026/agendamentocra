@@ -54,6 +54,7 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
       toast.success("Status do agendamento atualizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
     },
     onError: (err) => {
       toast.error(`Erro ao salvar: ${err.message}`);
@@ -193,6 +194,7 @@ export const getColumns = (
           toast.success("Agendamento excluído com sucesso!");
           queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
           queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
+          queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
         },
         onError: (error) => {
           toast.error(`Erro ao excluir agendamento: ${error.message}`);

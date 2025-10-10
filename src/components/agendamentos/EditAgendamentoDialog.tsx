@@ -144,6 +144,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
+      queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Invalida o novo gráfico
       onOpenChange(false);
     },
     onError: (error) => {
@@ -167,6 +168,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       processo_id: data.processo_id,
       observacoes: data.observacoes,
       status_atendimento: data.status_atendimento,
+      // origem_agendamento is intentionally not updated here, it should remain its initial value
     };
 
     updateAgendamentoMutation.mutate(updatedFields);
