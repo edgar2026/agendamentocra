@@ -89,7 +89,7 @@ const Login = () => {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
       <div className="w-full max-w-md rounded-lg border bg-card p-8 shadow-lg">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary">Sistema de Agendamento</h1>
+          <h1 className="text-3xl font-bold text-primary">Sistema de Atendimento CRA</h1>
           <p className="text-muted-foreground">
             {isSignUp ? 'Crie sua conta para continuar' : 'Faça login para continuar'}
           </p>
