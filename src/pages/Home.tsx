@@ -29,7 +29,7 @@ const queryClient = new QueryClient();
 
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = format(new Date(), "yyyy-MM-dd"); // Data atual para filtrar
   const [isAddAgendamentoDialogOpen, setIsAddAgendamentoDialogOpen] = useState(false);
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditAgendamentoDialogOpen, setIsEditAgendamentoDialogOpen] = useState(false);
@@ -37,11 +37,12 @@ const AgendamentosPanel = () => {
   const [hasUpdates, setHasUpdates] = useState(false);
 
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
-    queryKey: ["agendamentos"],
+    queryKey: ["agendamentos", today], // Chave de query agora inclui 'today' para rebuscar se o dia mudar
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agendamentos")
         .select("*")
+        .eq("data_agendamento", today) // Filtra por data de agendamento igual a hoje
         .order("data_agendamento", { ascending: false })
         .order("nome_aluno", { ascending: true });
 
@@ -63,7 +64,10 @@ const AgendamentosPanel = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
-          setHasUpdates(true);
+          // Se a mudança for para a data de hoje, marca que há atualizações
+          if (payload.new?.data_agendamento === today || payload.old?.data_agendamento === today) {
+            setHasUpdates(true);
+          }
         }
       )
       .subscribe();
@@ -71,7 +75,7 @@ const AgendamentosPanel = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [today]); // Adiciona 'today' como dependência para o useEffect do canal
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
     queryKey: ["atendentes"],
@@ -100,15 +104,16 @@ const AgendamentosPanel = () => {
   const archiveMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('archive-agendamentos', {
-        body: { date: today },
+        body: { date: today }, // Sempre arquiva agendamentos da data de hoje
       });
       if (error) throw new Error(error.message);
       return data;
     },
     onSuccess: (data) => {
       toast.success(data.message || "Agendamentos arquivados e tela limpa!");
-      refetch();
-      queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
+      refetch(); // Refetch os agendamentos do dia atual
+      queryClient.invalidateQueries({ queryKey: ["agendamentos", today] }); // Invalida a query específica do dia
+      // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
@@ -147,6 +152,7 @@ const AgendamentosPanel = () => {
     [atendentes, isLoadingAtendentes, profile]
   );
 
+  // Estes contadores agora refletem os agendamentos do DIA ATUAL
   const totalAgendamentosCount = localAgendamentos.length;
   const compareceuCount = localAgendamentos.filter(ag => ag.compareceu === true).length;
   const naoCompareceuCount = localAgendamentos.filter(ag => ag.compareceu === false).length;
@@ -184,7 +190,7 @@ const AgendamentosPanel = () => {
 
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
+          <CardTitle className="text-lg font-semibold">Agendamentos de Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle> {/* Título atualizado */}
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
