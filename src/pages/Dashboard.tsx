@@ -54,7 +54,7 @@ const DashboardPanel = () => {
       {/* Nova seção para listas, com AttendantGuicheList em uma coluna menor */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <TopAttendantsList
-          title={`Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
+          title={`Ranking de Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
           viewMode={viewMode}
           selectedDate={selectedDate}
           emptyMessage={`Nenhum atendente registrou atendimentos ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
