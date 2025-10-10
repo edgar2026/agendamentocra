@@ -107,12 +107,17 @@ export default {
             transform: "translateX(0)",
           },
         },
+        "subtle-sway": { // Nova animação para um balanço sutil
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(2px)" }, // Move 2px para a direita
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
         "slide-in": "slide-in 0.3s ease-out",
+        "subtle-sway": "subtle-sway 2s ease-in-out infinite alternate", // Aplica o balanço de forma infinita e alternada
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",

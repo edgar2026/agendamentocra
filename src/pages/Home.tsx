@@ -199,7 +199,7 @@ const AgendamentosPanel = () => {
         </div>
       )}
 
-      <Card className="mb-4 shadow-sm">
+      <Card className="mb-4 shadow-sm animate-subtle-sway"> {/* Adicionado animate-subtle-sway aqui */}
         <CardHeader className="pb-0"> {/* Ajustado para pb-0 */}
           <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
         </CardHeader>
