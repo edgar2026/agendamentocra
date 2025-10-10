@@ -200,38 +200,38 @@ const AgendamentosPanel = () => {
       )}
 
       <Card className="mb-4 shadow-sm">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-0"> {/* Ajustado para pb-0 */}
           <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4"> {/* Ajustado para pt-2 */}
           {/* Total */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-primary/10 text-primary">
-            <CalendarDays className="h-6 w-6 mb-1" />
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary"> {/* Ajustado para py-2 px-3 */}
+            <CalendarDays className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
             <span className="text-sm font-medium">Total</span>
-            <span className="text-2xl font-bold">{totalAgendamentosCount}</span>
+            <span className="text-xl font-bold">{totalAgendamentosCount}</span> {/* Texto um pouco menor */}
           </div>
           {/* Compareceu */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-success/10 text-success">
-            <CheckCircle2 className="h-6 w-6 mb-1" />
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/10 text-success"> {/* Ajustado para py-2 px-3 */}
+            <CheckCircle2 className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
             <span className="text-sm font-medium">Compareceu</span>
-            <span className="text-2xl font-bold">{compareceuCount}</span>
+            <span className="text-xl font-bold">{compareceuCount}</span> {/* Texto um pouco menor */}
           </div>
           {/* Não Compareceu */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-destructive/10 text-destructive">
-            <XCircle className="h-6 w-6 mb-1" />
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/10 text-destructive"> {/* Ajustado para py-2 px-3 */}
+            <XCircle className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
             <span className="text-sm font-medium">Não Compareceu</span>
-            <span className="text-2xl font-bold">{naoCompareceuCount}</span>
+            <span className="text-xl font-bold">{naoCompareceuCount}</span> {/* Texto um pouco menor */}
           </div>
           {/* Pendente */}
-          <div className="flex flex-col items-center justify-center p-3 rounded-md bg-muted/10 text-muted-foreground">
-            <Clock className="h-6 w-6 mb-1" />
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/10 text-muted-foreground"> {/* Ajustado para py-2 px-3 */}
+            <Clock className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
             <span className="text-sm font-medium">Pendente</span>
-            <span className="text-2xl font-bold">{pendenteCount}</span>
+            <span className="text-xl font-bold">{pendenteCount}</span> {/* Texto um pouco menor */}
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-4"> {/* Alterado para justify-between e flex-wrap */}
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
         {/* Grupo de botões da esquerda (Admin/Triagem) */}
         <div className="flex flex-wrap items-center gap-4">
           {hasUpdates && (
