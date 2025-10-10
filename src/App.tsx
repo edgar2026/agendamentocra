@@ -3,7 +3,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
-import Painel from "./pages/Painel"; // Importar a nova página do Painel
 import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
 import { useAuth } from "./contexts/AuthContext";
@@ -27,9 +26,6 @@ function App() {
       <Routes>
         <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
         
-        {/* Rota pública para o Painel, não precisa de login */}
-        <Route path="/painel" element={<Painel />} />
-
         {/* Rotas Protegidas com o Layout */}
         <Route element={session ? <Layout /> : <Navigate to="/login" />}>
           <Route path="/" element={<Home />} />

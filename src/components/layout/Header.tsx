@@ -1,13 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { UserNav } from "@/components/layout/UserNav";
-import { Home, LayoutDashboard, Settings, BarChart2, MonitorPlay } from "lucide-react";
+import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react"; // MonitorPlay removido
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
-  { href: "/painel", label: "Painel", icon: MonitorPlay, roles: ['ADMIN', 'TRIAGEM'] },
+  // { href: "/painel", label: "Painel", icon: MonitorPlay, roles: ['ADMIN', 'TRIAGEM'] }, // Removido
   { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
 ];
 

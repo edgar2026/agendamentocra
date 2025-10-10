@@ -6,6 +6,7 @@ const pageTitles: { [key: string]: string } = {
   "/": "Painel de Atendimentos",
   "/dashboard": "Dashboard Gerencial",
   "/admin": "Painel Administrativo",
+  // "/painel": "Painel de Chamadas", // Removido
 };
 
 export function Layout() {
@@ -13,7 +14,7 @@ export function Layout() {
   const title = pageTitles[location.pathname] || "UNINASSAU";
 
   return (
-    <div className="flex min-h-screen flex-col"> {/* Removido o grid e a coluna da sidebar */}
+    <div className="flex min-h-screen flex-col">
       <Header title={title} />
       <main className="flex-1 overflow-auto bg-background p-4 md:p-6">
         <Outlet />

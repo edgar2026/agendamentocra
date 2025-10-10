@@ -1,8 +1,8 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { Agendamento, AgendamentoStatus, Atendente, Profile } from "@/types" // Importar Profile
-import { MoreVertical, ArrowUpDown, Check, X, Trash2, RotateCcw, Edit, Megaphone } from "lucide-react" // Importar Edit e Megaphone
+import { Agendamento, AgendamentoStatus, Atendente, Profile } from "@/types"
+import { MoreVertical, ArrowUpDown, Check, X, Trash2, RotateCcw, Edit } from "lucide-react" // Megaphone removido
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -107,7 +107,7 @@ export const getColumns = (
   isLoadingAtendentes: boolean,
   onUpdate: (ag: Agendamento) => void,
   onEdit: (ag: Agendamento) => void,
-  profile: Profile | null // Adicionar profile para controle de acesso
+  profile: Profile | null
 ): ColumnDef<Agendamento>[] => ([
   {
     accessorKey: "processo_id",
@@ -166,23 +166,23 @@ export const getColumns = (
       const queryClient = useQueryClient();
       const today = format(new Date(), "yyyy-MM-dd");
 
-      const canManage = profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM';
+      // const canManage = profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM'; // Não é mais necessário para chamar no painel
 
-      const callToPanelMutation = useMutation({
-        mutationFn: async (ag: Agendamento) => {
-          const { error } = await supabase.from("chamadas_painel").insert({
-            nome_aluno: ag.nome_aluno,
-            guiche: ag.guiche || ag.atendente,
-          });
-          if (error) throw new Error(error.message);
-        },
-        onSuccess: () => {
-          toast.success(`${agendamento.nome_aluno} foi chamado(a) no painel!`);
-        },
-        onError: (error) => {
-          toast.error(`Erro ao chamar no painel: ${error.message}`);
-        },
-      });
+      // const callToPanelMutation = useMutation({ // Removido
+      //   mutationFn: async (ag: Agendamento) => {
+      //     const { error } = await supabase.from("chamadas_painel").insert({
+      //       nome_aluno: ag.nome_aluno,
+      //       guiche: ag.guiche || ag.atendente,
+      //     });
+      //     if (error) throw new Error(error.message);
+      //   },
+      //   onSuccess: () => {
+      //     toast.success(`${agendamento.nome_aluno} foi chamado(a) no painel!`);
+      //   },
+      //   onError: (error) => {
+      //     toast.error(`Erro ao chamar no painel: ${error.message}`);
+      //   },
+      // });
 
       const deleteAgendamentoMutation = useMutation({
         mutationFn: async (id: string) => {
@@ -210,17 +210,17 @@ export const getColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {canManage && (
+              {/* {canManage && ( // Removido
                 <DropdownMenuItem onClick={() => callToPanelMutation.mutate(agendamento)}>
                   <Megaphone className="mr-2 h-4 w-4 text-primary" />
                   Chamar no Painel
                 </DropdownMenuItem>
-              )}
+              )} */}
               <DropdownMenuItem onClick={() => onEdit(agendamento)}>
                 <Edit className="mr-2 h-4 w-4" />
                 Editar Agendamento
               </DropdownMenuItem>
-              {canManage && (
+              {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && ( // Mantido o controle de acesso para exclusão
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
