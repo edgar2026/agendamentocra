@@ -24,7 +24,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock } from "@/components/layout/Clock"; // Importando o novo componente Clock
 
 const queryClient = new QueryClient();
 
@@ -180,7 +179,6 @@ const AgendamentosPanel = () => {
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
-          <Clock />
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">

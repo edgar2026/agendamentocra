@@ -3,6 +3,7 @@ import { UserNav } from "@/components/layout/UserNav";
 import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react"; // MonitorPlay removido
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { Clock } from "@/components/layout/Clock";
 
 const navItems = [
   { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
@@ -48,7 +49,10 @@ export function Header({ title }: HeaderProps) {
           })}
         </nav>
       </div>
-      <UserNav />
+      <div className="flex items-center gap-4">
+        <Clock />
+        <UserNav />
+      </div>
     </header>
   );
 }
