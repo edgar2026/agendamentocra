@@ -107,9 +107,10 @@ export default {
             transform: "translateX(0)",
           },
         },
-        "slide-text-horizontal": { // Nova animação para o texto deslizar
-          "0%, 100%": { transform: "translateX(0)" },
-          "50%": { transform: "translateX(20px)" }, // Move 20px para a direita
+        "slide-text-horizontal": {
+          "0%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(20px)" },
+          "100%": { transform: "translateX(20px)" }, // Pausa no final
         },
       },
       animation: {
@@ -117,7 +118,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.5s ease-out",
         "slide-in": "slide-in 0.3s ease-out",
-        "slide-text-horizontal": "slide-text-horizontal 3s ease-in-out infinite alternate", // Aplica o deslizamento de forma infinita e alternada
+        "slide-text-horizontal": "slide-text-horizontal 3s ease-in-out infinite", // Removido 'alternate'
       },
       backgroundImage: {
         "gradient-primary": "var(--gradient-primary)",

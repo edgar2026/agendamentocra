@@ -194,43 +194,43 @@ const AgendamentosPanel = () => {
         </div>
       )}
       {triageAttendantNames && (
-        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm overflow-hidden"> {/* Adicionado overflow-hidden */}
+        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm overflow-hidden">
           <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É: 
-            <span className="font-bold inline-block animate-slide-text-horizontal whitespace-nowrap"> {/* Adicionado inline-block, animate-slide-text-horizontal e whitespace-nowrap */}
+            <span className="font-bold inline-block animate-slide-text-horizontal whitespace-nowrap">
               {triageAttendantNames}
             </span>
           </p>
         </div>
       )}
 
-      <Card className="mb-4 shadow-sm"> {/* Removido animate-subtle-sway */}
-        <CardHeader className="pb-0"> {/* Ajustado para pb-0 */}
+      <Card className="mb-4 shadow-sm">
+        <CardHeader className="pb-0">
           <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
         </CardHeader>
-        <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4"> {/* Ajustado para pt-2 */}
+        <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Total */}
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary"> {/* Ajustado para py-2 px-3 */}
-            <CalendarDays className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
+            <CalendarDays className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Total</span>
-            <span className="text-xl font-bold">{totalAgendamentosCount}</span> {/* Texto um pouco menor */}
+            <span className="text-xl font-bold">{totalAgendamentosCount}</span>
           </div>
           {/* Compareceu */}
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/10 text-success"> {/* Ajustado para py-2 px-3 */}
-            <CheckCircle2 className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/10 text-success">
+            <CheckCircle2 className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Compareceu</span>
-            <span className="text-xl font-bold">{compareceuCount}</span> {/* Texto um pouco menor */}
+            <span className="text-xl font-bold">{compareceuCount}</span>
           </div>
           {/* Não Compareceu */}
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/10 text-destructive"> {/* Ajustado para py-2 px-3 */}
-            <XCircle className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/10 text-destructive">
+            <XCircle className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Não Compareceu</span>
-            <span className="text-xl font-bold">{naoCompareceuCount}</span> {/* Texto um pouco menor */}
+            <span className="text-xl font-bold">{naoCompareceuCount}</span>
           </div>
           {/* Pendente */}
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/10 text-muted-foreground"> {/* Ajustado para py-2 px-3 */}
-            <Clock className="h-5 w-5 mb-1" /> {/* Ícone um pouco menor */}
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/10 text-muted-foreground">
+            <Clock className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Pendente</span>
-            <span className="text-xl font-bold">{pendenteCount}</span> {/* Texto um pouco menor */}
+            <span className="text-xl font-bold">{pendenteCount}</span>
           </div>
         </CardContent>
       </Card>
