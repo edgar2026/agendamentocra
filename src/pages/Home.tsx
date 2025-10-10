@@ -37,12 +37,13 @@ const AgendamentosPanel = () => {
   const [hasUpdates, setHasUpdates] = useState(false);
 
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
-    queryKey: ["agendamentos", today],
+    queryKey: ["agendamentos"], // Removido o filtro 'today' do queryKey
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agendamentos")
         .select("*")
-        .eq('data_agendamento', today)
+        // .eq('data_agendamento', today) // Removido o filtro de data
+        .order("data_agendamento", { ascending: false }) // Ordenar por data para ver os mais recentes primeiro
         .order("nome_aluno", { ascending: true });
 
       if (error) throw new Error(error.message);
@@ -63,10 +64,8 @@ const AgendamentosPanel = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
-          const record = (payload.new || payload.old) as Partial<Agendamento>;
-          if (record && record.data_agendamento === today) {
-            setHasUpdates(true);
-          }
+          // Qualquer mudança na tabela agendamentos deve acionar uma atualização
+          setHasUpdates(true);
         }
       )
       .subscribe();
@@ -74,7 +73,7 @@ const AgendamentosPanel = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [today]);
+  }, []); // Removido 'today' das dependências, pois não estamos mais filtrando por ele
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
     queryKey: ["atendentes"],
@@ -93,7 +92,7 @@ const AgendamentosPanel = () => {
         .from("atendentes")
         .select("name, guiche")
         .eq("guiche", "TRIAGEM")
-        .order("name", { ascending: true }); // Adicionado ordenação por nome
+        .order("name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
@@ -102,6 +101,7 @@ const AgendamentosPanel = () => {
 
   const archiveMutation = useMutation({
     mutationFn: async () => {
+      // A função Edge ainda arquiva agendamentos para a data 'today'
       const { data, error } = await supabase.functions.invoke('archive-agendamentos', {
         body: { date: today },
       });
@@ -110,8 +110,17 @@ const AgendamentosPanel = () => {
     },
     onSuccess: (data) => {
       toast.success(data.message || "Agendamentos arquivados e tela limpa!");
-      refetch();
+      refetch(); // Refetch all agendamentos after archiving
       queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
+      // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
+      queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
+      queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
+      queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] });
     },
     onError: (error) => {
       toast.error(`Erro ao arquivar: ${error.message}`);
@@ -142,6 +151,7 @@ const AgendamentosPanel = () => {
     [atendentes, isLoadingAtendentes, profile]
   );
 
+  // Estes contadores agora refletem TODOS os agendamentos na tabela 'agendamentos'
   const totalAgendamentosCount = localAgendamentos.length;
   const compareceuCount = localAgendamentos.filter(ag => ag.compareceu === true).length;
   const naoCompareceuCount = localAgendamentos.filter(ag => ag.compareceu === false).length;
@@ -179,7 +189,7 @@ const AgendamentosPanel = () => {
 
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Atendimentos para Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle>
+          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle> {/* Título atualizado */}
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
@@ -226,7 +236,7 @@ const AgendamentosPanel = () => {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta ação moverá todos os {totalAgendamentosCount} agendamentos de hoje para o histórico e limpará a tela atual.
+                      Esta ação moverá todos os agendamentos **da data de hoje ({format(new Date(), "dd/MM/yyyy")})** para o histórico e os removerá da lista principal.
                       Isso não pode ser desfeito. Você deve fazer isso apenas no final do dia, antes de importar uma nova planilha.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
