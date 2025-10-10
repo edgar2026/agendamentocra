@@ -92,7 +92,8 @@ const AgendamentosPanel = () => {
       const { data, error } = await supabase
         .from("atendentes")
         .select("name, guiche")
-        .eq("guiche", "TRIAGEM");
+        .eq("guiche", "TRIAGEM")
+        .order("name", { ascending: true }); // Adicionado ordenação por nome
       if (error) throw new Error(error.message);
       return data || [];
     },
