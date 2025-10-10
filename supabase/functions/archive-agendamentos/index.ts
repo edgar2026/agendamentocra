@@ -17,23 +17,26 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { date } = await req.json();
-    if (!date) {
-      throw new Error("A data é obrigatória para o arquivamento.");
+    const { agendamentoIds } = await req.json();
+    if (!agendamentoIds || !Array.isArray(agendamentoIds) || agendamentoIds.length === 0) {
+      return new Response(JSON.stringify({ message: "Nenhum ID de agendamento fornecido para arquivar." }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, // Bad Request
+      });
     }
 
     // 1. Selecionar os agendamentos a serem arquivados
     const { data: agendamentosToArchive, error: selectError } = await supabaseServiceClient
       .from('agendamentos')
       .select('*')
-      .eq('data_agendamento', date);
+      .in('id', agendamentoIds); // Filtrar pelos IDs fornecidos
 
     if (selectError) {
       throw new Error(`Erro ao selecionar agendamentos: ${selectError.message}`);
     }
 
     if (!agendamentosToArchive || agendamentosToArchive.length === 0) {
-      return new Response(JSON.stringify({ message: "Nenhum agendamento encontrado para arquivar na data especificada." }), {
+      return new Response(JSON.stringify({ message: "Nenhum agendamento encontrado com os IDs especificados para arquivar." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
@@ -52,11 +55,9 @@ serve(async (req) => {
     const { error: deleteError } = await supabaseServiceClient
       .from('agendamentos')
       .delete()
-      .eq('data_agendamento', date);
+      .in('id', agendamentoIds); // Deletar pelos IDs fornecidos
 
     if (deleteError) {
-      // Esta é uma situação crítica. Os dados foram copiados mas não deletados.
-      // O ideal seria ter um mecanismo de rollback, mas por enquanto, notificamos o erro.
       throw new Error(`Erro ao deletar da tabela principal (DADOS FORAM COPIADOS): ${deleteError.message}`);
     }
 

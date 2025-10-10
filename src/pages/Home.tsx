@@ -29,7 +29,7 @@ const queryClient = new QueryClient();
 
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd"); // Data atual para o botão de arquivar e importação
+  const today = format(new Date(), "yyyy-MM-dd"); // Data atual para o botão de importação
   const [isAddAgendamentoDialogOpen, setIsAddAgendamentoDialogOpen] = useState(false);
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditAgendamentoDialogOpen, setIsEditAgendamentoDialogOpen] = useState(false);
@@ -38,12 +38,12 @@ const AgendamentosPanel = () => {
 
   // Query para buscar TODOS os agendamentos
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
-    queryKey: ["agendamentos"], // Não filtra por data aqui
+    queryKey: ["agendamentos"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agendamentos")
         .select("*")
-        .order("data_agendamento", { ascending: false }) // Ordena por data, mais recente primeiro
+        .order("data_agendamento", { ascending: false })
         .order("nome_aluno", { ascending: true });
 
       if (error) throw new Error(error.message);
@@ -64,7 +64,6 @@ const AgendamentosPanel = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
-          // Qualquer mudança na tabela de agendamentos marca que há atualizações
           setHasUpdates(true);
         }
       )
@@ -100,17 +99,17 @@ const AgendamentosPanel = () => {
   });
 
   const archiveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (agendamentoIds: string[]) => {
       const { data, error } = await supabase.functions.invoke('archive-agendamentos', {
-        body: { date: today }, // Sempre arquiva agendamentos da data de hoje
+        body: { agendamentoIds }, // Envia todos os IDs da lista atual
       });
       if (error) throw new Error(error.message);
       return data;
     },
     onSuccess: (data) => {
-      toast.success(data.message || "Agendamentos arquivados e tela limpa!");
-      refetch(); // Refetch todos os agendamentos
-      queryClient.invalidateQueries({ queryKey: ["agendamentos"] }); // Invalida a query principal
+      toast.success(data.message || "Agendamentos arquivados e lista limpa!");
+      refetch(); // Refetch todos os agendamentos para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
       // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
@@ -150,7 +149,6 @@ const AgendamentosPanel = () => {
     [atendentes, isLoadingAtendentes, profile]
   );
 
-  // Estes contadores agora refletem TODOS os agendamentos no banco de dados
   const totalAgendamentosCount = localAgendamentos.length;
   const compareceuCount = localAgendamentos.filter(ag => ag.compareceu === true).length;
   const naoCompareceuCount = localAgendamentos.filter(ag => ag.compareceu === false).length;
@@ -188,7 +186,7 @@ const AgendamentosPanel = () => {
 
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle> {/* Título atualizado */}
+          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
@@ -226,22 +224,25 @@ const AgendamentosPanel = () => {
             <>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={totalAgendamentosCount === 0}>
+                  <Button variant="destructive" disabled={localAgendamentos.length === 0}>
                     <Archive className="mr-2 h-4 w-4" />
-                    Arquivar e Limpar Dia
+                    Arquivar e Limpar Lista
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta ação moverá todos os agendamentos **da data de hoje ({format(new Date(), "dd/MM/yyyy")})** para o histórico e os removerá da lista principal.
-                      Isso não pode ser desfeito. Você deve fazer isso apenas no final do dia, antes de importar uma nova planilha.
+                      Esta ação moverá **TODOS os agendamentos atualmente visíveis nesta lista** para o histórico e os removerá da tabela principal.
+                      Isso não pode ser desfeito.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => archiveMutation.mutate()} disabled={archiveMutation.isPending}>
+                    <AlertDialogAction
+                      onClick={() => archiveMutation.mutate(localAgendamentos.map(ag => ag.id))}
+                      disabled={archiveMutation.isPending}
+                    >
                       {archiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                       Confirmar e Arquivar
                     </AlertDialogAction>
