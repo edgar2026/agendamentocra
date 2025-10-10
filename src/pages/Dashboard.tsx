@@ -9,7 +9,7 @@ import { TopAttendantsList } from "@/components/dashboard/TopAttendantsList";
 import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankingList";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
-import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart"; // Importar o novo gráfico
+import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart";
 
 const queryClient = new QueryClient();
 
@@ -44,14 +44,14 @@ const DashboardPanel = () => {
       </div>
       <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
       
-      {/* Nova seção de gráficos com 3 colunas em telas grandes */}
+      {/* Seção de gráficos principais com 3 colunas em telas grandes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
         <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
-        {/* <AppointmentSourceChart selectedDate={formattedDate} viewMode={viewMode} /> */}
+        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} /> {/* Gráfico de pizza movido para cá */}
       </div>
 
-      {/* Nova seção para listas e o novo gráfico de comparecimento */}
+      {/* Seção para listas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <TopAttendantsList
           title={`Ranking de Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
@@ -65,12 +65,7 @@ const DashboardPanel = () => {
           selectedDate={selectedDate}
           emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
         />
-        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} /> {/* Novo gráfico de pizza */}
-      </div>
-
-      {/* Mantendo AttendantGuicheList em uma seção separada ou ajustando o layout conforme necessário */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        <AttendantGuicheList />
+        <AttendantGuicheList /> {/* Mantido aqui ou ajustado conforme necessário */}
       </div>
     </div>
   );
