@@ -15,29 +15,25 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
   const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
   const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
-  const todayString = format(new Date(), "yyyy-MM-dd");
-  const isSelectedDatePast = selectedDate < todayString;
-
   const getTableName = () => {
-    if (viewMode === 'daily') {
-      return isSelectedDatePast ? "agendamentos_historico" : "agendamentos";
-    }
-    return "agendamentos_historico"; // Monthly view always uses historical data
+    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
+    return "agendamentos";
   };
+
+  const tableName = getTableName();
 
   const { data, isLoading, error } = useQuery<Array<{ tipo_atendimento: string; count: number }>>({
     queryKey: ["serviceTypeData", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
       let query;
       if (viewMode === 'daily') {
         query = supabase
-          .from(table)
+          .from(tableName)
           .select("tipo_atendimento")
           .eq("data_agendamento", selectedDate);
       } else { // monthly
         query = supabase
-          .from(table)
+          .from(tableName)
           .select("tipo_atendimento")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
@@ -101,7 +97,7 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
       <CardHeader>
         <CardTitle>Atendimentos por Tipo</CardTitle>
       </CardHeader>
-      <CardContent className="pt-2"> {/* Mantido pt-2 */}
+      <CardContent className="pt-2">
         {data && data.length === 0 ? (
           <div className="flex items-center justify-center h-[200px] text-muted-foreground">
             Nenhum atendimento por tipo registrado {periodText}.

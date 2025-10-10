@@ -15,24 +15,20 @@ interface ServiceTypeRankingListProps {
 export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMessage }: ServiceTypeRankingListProps) {
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
 
-  const todayString = format(new Date(), "yyyy-MM-dd");
-  const isSelectedDatePast = formattedDate < todayString;
-
   const getTableName = () => {
-    if (viewMode === 'daily') {
-      return isSelectedDatePast ? "agendamentos_historico" : "agendamentos";
-    }
-    return "agendamentos_historico"; // Monthly view always uses historical data
+    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
+    return "agendamentos";
   };
+
+  const tableName = getTableName();
 
   const { data, isLoading, error } = useQuery<Array<{ tipo_atendimento: string; count: number }>>({
     queryKey: ["serviceTypeRanking", viewMode, formattedDate],
     queryFn: async () => {
-      const table = getTableName();
       let query;
       if (viewMode === 'daily') {
         query = supabase
-          .from(table)
+          .from(tableName)
           .select("tipo_atendimento")
           .eq("data_agendamento", formattedDate);
       } else { // monthly
@@ -41,7 +37,7 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
         const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
         query = supabase
-          .from(table)
+          .from(tableName)
           .select("tipo_atendimento")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
@@ -99,16 +95,16 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+      <CardContent className="pt-0">
         {data && data.length > 0 ? (
-          <ul className="space-y-1"> {/* Reduzido o espaçamento entre os itens */}
+          <ul className="space-y-1">
             {data.map((item, index) => (
-              <li key={item.tipo_atendimento} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30"> {/* Reduzido gap e padding */}
+              <li key={item.tipo_atendimento} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30">
                 <span className="font-semibold text-foreground flex-grow">
                   {index === 0 ? "🏆 " : ""}
                   {item.tipo_atendimento}
                 </span>
-                <span className="text-primary font-bold">{item.count} atendimentos</span> {/* Adicionado font-bold */}
+                <span className="text-primary font-bold">{item.count} atendimentos</span>
               </li>
             ))}
           </ul>

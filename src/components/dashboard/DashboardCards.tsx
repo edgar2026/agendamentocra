@@ -15,15 +15,13 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
   const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
-  const todayString = format(new Date(), "yyyy-MM-dd");
-  const isSelectedDatePast = selectedDate < todayString;
-
   const getTableName = () => {
-    if (viewMode === 'daily') {
-      return isSelectedDatePast ? "agendamentos_historico" : "agendamentos";
-    }
-    return "agendamentos_historico"; // Monthly view always uses historical data
+    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
+    // Isso inclui dados de dias passados que não foram movidos para 'agendamentos_historico'.
+    return "agendamentos";
   };
+
+  const tableName = getTableName();
 
   const getBaseQuery = (table: string) => {
     let query = supabase.from(table).select("*", { count: "exact" });
@@ -38,8 +36,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: totalAgendamentos, isLoading: isLoadingTotal } = useQuery<number>({
     queryKey: ["dashboardTotalAgendamentos", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
-      const { count, error } = await getBaseQuery(table);
+      const { count, error } = await getBaseQuery(tableName);
       if (error) throw new Error(error.message);
       return count || 0;
     },
@@ -48,8 +45,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: comparecimentos, isLoading: isLoadingComparecimentos } = useQuery<number>({
     queryKey: ["dashboardComparecimentos", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
-      const { count, error } = await getBaseQuery(table).eq("compareceu", true);
+      const { count, error } = await getBaseQuery(tableName).eq("compareceu", true);
       if (error) throw new Error(error.message);
       return count || 0;
     },
@@ -58,8 +54,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: faltas, isLoading: isLoadingFaltas } = useQuery<number>({
     queryKey: ["dashboardFaltas", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
-      const { count, error } = await getBaseQuery(table).eq("compareceu", false);
+      const { count, error } = await getBaseQuery(tableName).eq("compareceu", false);
       if (error) throw new Error(error.message);
       return count || 0;
     },
@@ -69,8 +64,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: agendadosCount, isLoading: isLoadingAgendados } = useQuery<number>({
     queryKey: ["dashboardAgendadosCount", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
-      const { count, error } = await getBaseQuery(table).eq("status_atendimento", "AGENDADO");
+      const { count, error } = await getBaseQuery(tableName).eq("origem_agendamento", "PLANILHA");
       if (error) throw new Error(error.message);
       return count || 0;
     },
@@ -79,8 +73,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: expontaneosCount, isLoading: isLoadingExpontaneos } = useQuery<number>({
     queryKey: ["dashboardExpontaneosCount", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
-      const { count, error } = await getBaseQuery(table).eq("status_atendimento", "EXPONTANEO");
+      const { count, error } = await getBaseQuery(tableName).eq("origem_agendamento", "MANUAL");
       if (error) throw new Error(error.message);
       return count || 0;
     },
@@ -91,12 +84,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
-          <CardTitle className="text-lg font-medium">Total de Agendamentos</CardTitle> {/* Ajustado text-lg */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0">
+          <CardTitle className="text-lg font-medium">Total de Agendamentos</CardTitle>
           <CalendarDays className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
-          <div className="text-3xl font-bold text-primary"> {/* Ajustado text-3xl */}
+        <CardContent className="pt-0">
+          <div className="text-3xl font-bold text-primary">
             {isLoadingTotal ? "Carregando..." : totalAgendamentos}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -106,12 +99,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       </Card>
 
       <Card className="shadow-elevated border-l-4 border-success transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
-          <CardTitle className="text-lg font-medium">Comparecimentos</CardTitle> {/* Ajustado text-lg */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0">
+          <CardTitle className="text-lg font-medium">Comparecimentos</CardTitle>
           <CheckCircle2 className="h-4 w-4 text-success" />
         </CardHeader>
-        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
-          <div className="text-3xl font-bold text-success"> {/* Ajustado text-3xl */}
+        <CardContent className="pt-0">
+          <div className="text-3xl font-bold text-success">
             {isLoadingComparecimentos ? "Carregando..." : comparecimentos}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -121,12 +114,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       </Card>
 
       <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
-          <CardTitle className="text-lg font-medium">Faltas</CardTitle> {/* Ajustado text-lg */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0">
+          <CardTitle className="text-lg font-medium">Faltas</CardTitle>
           <XCircle className="h-4 w-4 text-destructive" />
         </CardHeader>
-        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
-          <div className="text-3xl font-bold text-destructive"> {/* Ajustado text-3xl */}
+        <CardContent className="pt-0">
+          <div className="text-3xl font-bold text-destructive">
             {isLoadingFaltas ? "Carregando..." : faltas}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -137,12 +130,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Novo cartão para Agendados (da planilha) */}
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
-          <CardTitle className="text-lg font-medium">Agendados (Planilha)</CardTitle> {/* Ajustado text-lg */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0">
+          <CardTitle className="text-lg font-medium">Agendados (Planilha)</CardTitle>
           <CalendarDays className="h-4 w-4 text-primary" />
         </CardHeader>
-        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
-          <div className="text-3xl font-bold text-primary"> {/* Ajustado text-3xl */}
+        <CardContent className="pt-0">
+          <div className="text-3xl font-bold text-primary">
             {isLoadingAgendados ? "Carregando..." : agendadosCount}
           </div>
           <p className="text-xs text-muted-foreground">
@@ -153,12 +146,12 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Novo cartão para Expontâneos (manual) */}
       <Card className="shadow-elevated border-l-4 border-secondary transition-all duration-300 hover:scale-[1.02]">
-        <CardHeader className="flex flex-row items-center justify-between pb-0"> {/* Ajustado pb-0 e removido space-y-0 */}
-          <CardTitle className="text-lg font-medium">Expontâneos (Manual)</CardTitle> {/* Ajustado text-lg */}
+        <CardHeader className="flex flex-row items-center justify-between pb-0">
+          <CardTitle className="text-lg font-medium">Expontâneos (Manual)</CardTitle>
           <PlusCircle className="h-4 w-4 text-secondary-foreground" />
         </CardHeader>
-        <CardContent className="pt-0"> {/* Ajustado pt-0 */}
-          <div className="text-3xl font-bold text-secondary-foreground"> {/* Ajustado text-3xl */}
+        <CardContent className="pt-0">
+          <div className="text-3xl font-bold text-secondary-foreground">
             {isLoadingExpontaneos ? "Carregando..." : expontaneosCount}
           </div>
           <p className="text-xs text-muted-foreground">

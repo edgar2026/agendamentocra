@@ -14,21 +14,18 @@ const COLORS = ['hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--mut
 
 export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChartProps) {
   const dateObj = parseISO(selectedDate);
-  const todayString = format(new Date(), "yyyy-MM-dd");
-  const isSelectedDatePast = selectedDate < todayString;
 
   const getTableName = () => {
-    if (viewMode === 'daily') {
-      return isSelectedDatePast ? "agendamentos_historico" : "agendamentos";
-    }
-    return "agendamentos_historico"; // Monthly view always uses historical data
+    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
+    return "agendamentos";
   };
+
+  const tableName = getTableName();
 
   const { data, isLoading, error } = useQuery<Array<{ name: string; value: number; percentage: string }>>({
     queryKey: ["attendancePieChartData", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
-      let baseQuery = supabase.from(table).select("compareceu", { count: "exact" });
+      let baseQuery = supabase.from(tableName).select("compareceu", { count: "exact" });
 
       if (viewMode === 'daily') {
         baseQuery = baseQuery.eq("data_agendamento", selectedDate);

@@ -13,25 +13,22 @@ interface AppointmentsTrendChartProps {
 
 export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsTrendChartProps) {
   const dateObj = parseISO(selectedDate);
-  const todayString = format(new Date(), "yyyy-MM-dd");
-  const isSelectedDatePast = selectedDate < todayString;
 
   const getTableName = () => {
-    if (viewMode === 'daily') {
-      return isSelectedDatePast ? "agendamentos_historico" : "agendamentos";
-    }
-    return "agendamentos_historico"; // Monthly view always uses historical data
+    // Para garantir que todos os dados sejam visíveis, o Dashboard agora sempre consultará a tabela 'agendamentos'.
+    return "agendamentos";
   };
+
+  const tableName = getTableName();
 
   const { data, isLoading, error } = useQuery<Array<{ label: string; count: number }>>({
     queryKey: ["appointmentsTrendData", selectedDate, viewMode],
     queryFn: async () => {
-      const table = getTableName();
       let query;
 
       if (viewMode === 'daily') {
         query = supabase
-          .from(table)
+          .from(tableName)
           .select("horario")
           .eq("data_agendamento", selectedDate)
           .not("horario", "is", null)
@@ -40,7 +37,7 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
         const monthStart = format(startOfMonth(dateObj), "yyyy-MM-dd");
         const monthEnd = format(endOfMonth(dateObj), "yyyy-MM-dd");
         query = supabase
-          .from(table)
+          .from(tableName)
           .select("data_agendamento")
           .gte("data_agendamento", monthStart)
           .lte("data_agendamento", monthEnd);
@@ -122,7 +119,7 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
       <CardHeader>
         <CardTitle>Tendência de Agendamentos</CardTitle>
       </CardHeader>
-      <CardContent className="pt-2"> {/* Mantido pt-2 */}
+      <CardContent className="pt-2">
         {data && data.length === 0 ? (
           <div className="flex items-center justify-center h-[250px] text-muted-foreground">
             Nenhum agendamento registrado {periodText}.
