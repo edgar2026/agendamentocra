@@ -29,21 +29,21 @@ const queryClient = new QueryClient();
 
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd"); // Data atual para filtrar
+  const today = format(new Date(), "yyyy-MM-dd"); // Data atual para o botão de arquivar e importação
   const [isAddAgendamentoDialogOpen, setIsAddAgendamentoDialogOpen] = useState(false);
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditAgendamentoDialogOpen, setIsEditAgendamentoDialogOpen] = useState(false);
   const [localAgendamentos, setLocalAgendamentos] = useState<Agendamento[]>([]);
   const [hasUpdates, setHasUpdates] = useState(false);
 
+  // Query para buscar TODOS os agendamentos
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
-    queryKey: ["agendamentos", today], // Chave de query agora inclui 'today' para rebuscar se o dia mudar
+    queryKey: ["agendamentos"], // Não filtra por data aqui
     queryFn: async () => {
       const { data, error } = await supabase
         .from("agendamentos")
         .select("*")
-        .eq("data_agendamento", today) // Filtra por data de agendamento igual a hoje
-        .order("data_agendamento", { ascending: false })
+        .order("data_agendamento", { ascending: false }) // Ordena por data, mais recente primeiro
         .order("nome_aluno", { ascending: true });
 
       if (error) throw new Error(error.message);
@@ -64,10 +64,8 @@ const AgendamentosPanel = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
-          // Se a mudança for para a data de hoje, marca que há atualizações
-          if (payload.new?.data_agendamento === today || payload.old?.data_agendamento === today) {
-            setHasUpdates(true);
-          }
+          // Qualquer mudança na tabela de agendamentos marca que há atualizações
+          setHasUpdates(true);
         }
       )
       .subscribe();
@@ -75,7 +73,7 @@ const AgendamentosPanel = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [today]); // Adiciona 'today' como dependência para o useEffect do canal
+  }, []);
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
     queryKey: ["atendentes"],
@@ -111,8 +109,8 @@ const AgendamentosPanel = () => {
     },
     onSuccess: (data) => {
       toast.success(data.message || "Agendamentos arquivados e tela limpa!");
-      refetch(); // Refetch os agendamentos do dia atual
-      queryClient.invalidateQueries({ queryKey: ["agendamentos", today] }); // Invalida a query específica do dia
+      refetch(); // Refetch todos os agendamentos
+      queryClient.invalidateQueries({ queryKey: ["agendamentos"] }); // Invalida a query principal
       // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
@@ -152,7 +150,7 @@ const AgendamentosPanel = () => {
     [atendentes, isLoadingAtendentes, profile]
   );
 
-  // Estes contadores agora refletem os agendamentos do DIA ATUAL
+  // Estes contadores agora refletem TODOS os agendamentos no banco de dados
   const totalAgendamentosCount = localAgendamentos.length;
   const compareceuCount = localAgendamentos.filter(ag => ag.compareceu === true).length;
   const naoCompareceuCount = localAgendamentos.filter(ag => ag.compareceu === false).length;
@@ -190,7 +188,7 @@ const AgendamentosPanel = () => {
 
       <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Agendamentos de Hoje ({format(new Date(), "dd/MM/yyyy")})</CardTitle> {/* Título atualizado */}
+          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle> {/* Título atualizado */}
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
