@@ -20,6 +20,7 @@ const FiltrarHistoricoPanel = () => {
       const { data, error } = await supabase
         .from("agendamentos_historico")
         .select("*")
+        .eq("origem_agendamento", "MANUAL") // Apenas atendimentos espontâneos
         .or("processo_id.is.null,processo_id.eq.")
         .order("data_agendamento", { ascending: false });
       if (error) throw new Error(error.message);
@@ -38,9 +39,9 @@ const FiltrarHistoricoPanel = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Histórico de Atendimentos Sem Nº do Chamado</CardTitle>
+          <CardTitle>Histórico de espontâneo sem nº do chamado</CardTitle>
           <CardDescription>
-            Aqui estão listados todos os atendimentos do histórico que não possuem um número de chamado (processo) associado.
+            Aqui estão listados todos os atendimentos espontâneos (manuais) do histórico que não possuem um número de chamado (processo) associado.
             Utilize a ação de editar para adicionar o número faltante.
           </CardDescription>
         </CardHeader>
@@ -59,7 +60,7 @@ const FiltrarHistoricoPanel = () => {
             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <SearchX className="h-12 w-12 mb-4" />
               <p className="text-lg">Nenhum atendimento pendente encontrado.</p>
-              <p>Todos os registros no histórico possuem um número de chamado.</p>
+              <p>Todos os registros espontâneos no histórico possuem um número de chamado.</p>
             </div>
           )}
         </CardContent>

@@ -8,7 +8,7 @@ import { Clock } from "@/components/layout/Clock";
 const navItems = [
   { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
-  { href: "/filtrar-historico", label: "Filtrar histórico de espontâneo sem nº do chamado", icon: Filter, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/filtrar-historico", label: "Histórico de espontâneo sem nº do chamado", icon: Filter, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
   { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
 ];
 
