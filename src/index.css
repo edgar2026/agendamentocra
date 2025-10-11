@@ -10,20 +10,20 @@
 
   :root {
     --background: 210 36% 97%; /* Fundo cinza muito claro, quase branco */
-    --foreground: 222.2 47.4% 11.2%; /* Texto principal escuro */
+    --foreground: 330 30% 25%; /* Texto principal em magenta escuro */
 
     --card: 0 0% 100%; /* Cartões brancos */
-    --card-foreground: 222.2 47.4% 11.2%;
+    --card-foreground: 330 30% 25%; /* Texto do cartão em magenta escuro */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 330 30% 25%; /* Texto do popover em magenta escuro */
 
     --primary: 330 80% 55%; /* Rosa forte para Outubro Rosa */
     --primary-foreground: 0 0% 100%; /* Texto branco para o primário */
     --primary-glow: 330 80% 80%; /* Brilho ajustado para o novo primary */
 
     --secondary: 210 40% 96.1%; /* Cinza claro para secundário */
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary-foreground: 330 30% 25%; /* Texto secundário em magenta escuro */
 
     --success: 140 70% 35%; /* Verde mais profundo e agradável */
     --success-foreground: 0 0% 100%;
@@ -35,7 +35,7 @@
     --muted-foreground: 215.4 16.3% 46.9%;
 
     --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent-foreground: 330 30% 25%; /* Texto de destaque em magenta escuro */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
