@@ -9,42 +9,43 @@
   }
 
   :root {
-    --background: 210 36% 97%; /* Fundo cinza muito claro, quase branco */
-    --foreground: 222.2 47.4% 11.2%; /* Texto principal escuro */
+    /* Default theme values (UNINASSAU Padrão) - will be overridden by JS */
+    --theme-primary-h: 200;
+    --theme-primary-s: 80;
+    --theme-primary-l: 35;
+    --theme-background-h: 210;
+    --theme-background-s: 36;
+    --theme-background-l: 97;
 
-    --card: 0 0% 100%; /* Cartões brancos */
+    /* Link Tailwind's core colors to our dynamic theme variables */
+    --background: var(--theme-background-h) var(--theme-background-s)% var(--theme-background-l)%;
+    --primary: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
+    --ring: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
+
+    /* Static colors that don't change with the theme */
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
     --card-foreground: 222.2 47.4% 11.2%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
-
-    --primary: 200 80% 35%; /* Azul teal mais vibrante e moderno */
-    --primary-foreground: 0 0% 100%; /* Texto branco para o primário */
-    --primary-glow: 200 80% 70%; /* Brilho ajustado para o novo primary */
-
-    --secondary: 210 40% 96.1%; /* Cinza claro para secundário */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 200 80% 70%;
+    --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --success: 140 70% 35%; /* Verde mais profundo e agradável */
+    --success: 140 70% 35%;
     --success-foreground: 0 0% 100%;
-
-    --danger: 350 70% 45%; /* Vermelho um pouco mais suave */
+    --danger: 350 70% 45%;
     --danger-foreground: 0 0% 100%;
-
-    --muted: 210 40% 96.1%; /* Cinza claro para elementos mutados */
+    --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%; /* Borda cinza claro */
+    --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 200 80% 35%; /* Anel de foco com a nova cor primária */
 
-    --radius: 0.75rem; /* Bordas levemente arredondadas */
+    --radius: 0.75rem;
 
     --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
     --shadow-elevated: 0 10px 20px rgba(0, 0, 0, 0.07);
@@ -53,59 +54,44 @@
     --gradient-success: linear-gradient(to right, hsl(var(--success)), hsl(var(--success) / 0.8));
     --gradient-danger: linear-gradient(to right, hsl(var(--danger)), hsl(var(--danger) / 0.8));
     --gradient-secondary: linear-gradient(to right, hsl(var(--secondary)), hsl(var(--secondary) / 0.8));
-
-    /* Variáveis de tema dinâmicas */
-    --theme-primary-h: var(--primary-h);
-    --theme-primary-s: var(--primary-s);
-    --theme-primary-l: var(--primary-l);
-    --theme-background-h: var(--background-h);
-    --theme-background-s: var(--background-s);
-    --theme-background-l: var(--background-l);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Default dark mode values - will be overridden by JS */
+    --theme-primary-h: 200;
+    --theme-primary-s: 80;
+    --theme-primary-l: 45;
+    --theme-background-h: 222.2;
+    --theme-background-s: 84;
+    --theme-background-l: 4.9;
 
+    /* Link Tailwind's core colors to our dynamic theme variables for dark mode */
+    --background: var(--theme-background-h) var(--theme-background-s)% var(--theme-background-l)%;
+    --primary: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
+    --ring: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
+
+    /* Static dark mode colors */
+    --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 200 80% 45%; /* Teal um pouco mais claro para o modo escuro */
     --primary-foreground: 222.2 47.4% 11.2%;
     --primary-glow: 200 80% 38%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --success: 140 70% 40%;
     --success-foreground: 0 0% 100%;
-
     --danger: 350 62.8% 30.6%;
     --danger-foreground: 0 0% 100%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 200 80% 45%;
-
-    /* Variáveis de tema dinâmicas para o modo escuro */
-    --theme-primary-h: var(--primary-h);
-    --theme-primary-s: var(--primary-s);
-    --theme-primary-l: var(--primary-l);
-    --theme-background-h: var(--background-h);
-    --theme-background-s: var(--background-s);
-    --theme-background-l: var(--background-l);
   }
 }
 
@@ -114,42 +100,8 @@
     @apply border-border;
   }
   body {
-    /* Usar as variáveis dinâmicas para o background e primary */
-    background-color: hsl(var(--theme-background-h) var(--theme-background-s)% var(--theme-background-l)%);
-    color: hsl(var(--foreground));
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    transition: background-color 0.5s ease-in-out; /* Transição suave para o background */
-  }
-
-  /* Ajustar a cor primária para usar as variáveis dinâmicas */
-  .text-primary {
-    color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .bg-primary {
-    background-color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .border-primary {
-    border-color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .hover\\:bg-primary\\/10:hover {
-    background-color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)% / 0.1);
-  }
-  .hover\\:text-primary:hover {
-    color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .focus-visible\\:ring-primary:focus-visible {
-    --tw-ring-color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .ring-primary {
-    --tw-ring-color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .group-hover\\:text-primary:hover {
-    color: hsl(var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%);
-  }
-  .text-primary-foreground {
-    color: hsl(var(--primary-foreground));
-  }
-  .bg-primary-foreground {
-    background-color: hsl(var(--primary-foreground));
+    transition: background-color 0.5s ease-in-out;
   }
 }
