@@ -1,7 +1,4 @@
 import React from "react";
-import { useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -24,25 +21,6 @@ const AtendenteSelectCell: React.FC<AtendenteSelectCellProps> = ({ agendamento, 
     return atendentes?.find(att => att.name === name)?.id || "";
   };
 
-  const updateAgendamentoMutation = useMutation({
-    mutationFn: async ({ id, atendenteName, guiche }: { id: string, atendenteName: string | null, guiche: string | null }) => {
-      const { data, error } = await supabase
-        .from("agendamentos")
-        .update({ atendente: atendenteName, guiche: guiche })
-        .eq("id", id)
-        .select()
-        .single();
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: (data) => {
-      onUpdate(data);
-    },
-    onError: (err) => {
-      toast.error(`Erro ao salvar atendente: ${err.message}`);
-    },
-  });
-
   const handleAtendenteChange = (newId: string) => {
     let atendenteName: string | null = null;
     let guiche: string | null = null;
@@ -53,15 +31,8 @@ const AtendenteSelectCell: React.FC<AtendenteSelectCellProps> = ({ agendamento, 
       guiche = selectedAtendente?.guiche || null;
     }
 
-    // Atualização otimista local
+    // Apenas atualização local (otimista)
     onUpdate({ ...agendamento, atendente: atendenteName, guiche });
-
-    // Mutação para o banco de dados
-    updateAgendamentoMutation.mutate({
-      id: agendamento.id,
-      atendenteName,
-      guiche,
-    });
   };
 
   const currentAtendenteId = getAtendenteIdFromName(agendamento.atendente);
@@ -75,7 +46,6 @@ const AtendenteSelectCell: React.FC<AtendenteSelectCellProps> = ({ agendamento, 
     <Select
       value={currentAtendenteId}
       onValueChange={handleAtendenteChange}
-      disabled={updateAgendamentoMutation.isPending}
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder={currentAtendenteName} />

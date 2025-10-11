@@ -10,7 +10,7 @@ import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamento
 import { ImportAgendamentos } from "@/components/agendamentos/ImportAgendamentos";
 import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon } from "lucide-react";
+import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon, Save } from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -24,19 +24,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isEqual } from "lodash"; // Precisaremos de uma função para comparar objetos
 
 const queryClient = new QueryClient();
 
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
-  const today = format(new Date(), "yyyy-MM-dd"); // Data atual para o botão de importação
   const [isAddAgendamentoDialogOpen, setIsAddAgendamentoDialogOpen] = useState(false);
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditAgendamentoDialogOpen, setIsEditAgendamentoDialogOpen] = useState(false);
   const [localAgendamentos, setLocalAgendamentos] = useState<Agendamento[]>([]);
   const [hasUpdates, setHasUpdates] = useState(false);
 
-  // Query para buscar TODOS os agendamentos
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
     queryKey: ["agendamentos"],
     queryFn: async () => {
@@ -84,44 +83,41 @@ const AgendamentosPanel = () => {
     staleTime: Infinity,
   });
 
-  const { data: triageAttendants } = useQuery<Array<{ name: string, guiche: string | null }>>({
-    queryKey: ["triageAttendants"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("atendentes")
-        .select("name, guiche")
-        .eq("guiche", "TRIAGEM")
-        .order("name", { ascending: true });
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const archiveMutation = useMutation({
-    mutationFn: async (agendamentoIds: string[]) => {
-      const { data, error } = await supabase.functions.invoke('archive-agendamentos', {
-        body: { agendamentoIds }, // Envia todos os IDs da lista atual
+  const saveAndArchiveMutation = useMutation({
+    mutationFn: async (agendamentosParaSalvar: Agendamento[]) => {
+      // 1. Identificar agendamentos que foram realmente alterados
+      const agendamentosOriginaisMap = new Map(agendamentos?.map(a => [a.id, a]));
+      const agendamentosAlterados = agendamentosParaSalvar.filter(localAg => {
+        const originalAg = agendamentosOriginaisMap.get(localAg.id);
+        return originalAg && !isEqual(localAg, originalAg);
       });
-      if (error) throw new Error(error.message);
-      return data;
+
+      if (agendamentosAlterados.length > 0) {
+        const { error: upsertError } = await supabase.from("agendamentos").upsert(agendamentosAlterados);
+        if (upsertError) throw new Error(`Erro ao salvar alterações: ${upsertError.message}`);
+      }
+
+      // 2. Identificar agendamentos concluídos para arquivar
+      const idsParaArquivar = agendamentosParaSalvar
+        .filter(ag => ag.status === 'COMPARECEU' || ag.status === 'NAO_COMPARECEU')
+        .map(ag => ag.id);
+
+      if (idsParaArquivar.length > 0) {
+        const { error: archiveError } = await supabase.functions.invoke('archive-agendamentos', {
+          body: { agendamentoIds: idsParaArquivar },
+        });
+        if (archiveError) throw new Error(`Erro ao arquivar: ${archiveError.message}`);
+        return { saved: agendamentosAlterados.length, archived: idsParaArquivar.length };
+      }
+      
+      return { saved: agendamentosAlterados.length, archived: 0 };
     },
-    onSuccess: (data) => {
-      toast.success(data.message || "Agendamentos arquivados e lista limpa!");
-      refetch(); // Refetch todos os agendamentos para atualizar a lista
-      queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
-      // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
-      queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] });
+    onSuccess: ({ saved, archived }) => {
+      toast.success(`${saved} alterações salvas e ${archived} agendamentos arquivados com sucesso!`);
+      refetch();
     },
     onError: (error) => {
-      toast.error(`Erro ao arquivar: ${error.message}`);
+      toast.error(`Erro na operação: ${error.message}`);
     },
   });
 
@@ -160,33 +156,34 @@ const AgendamentosPanel = () => {
     return "";
   };
 
-  const triageAttendantNames = useMemo(() => {
-    if (triageAttendants && triageAttendants.length > 0) {
-      return triageAttendants.map(att => att.name).join(', ');
-    }
-    return null;
-  }, [triageAttendants]);
-
   const canManageData = useMemo(() => {
     if (!profile) return false;
     return profile.role === 'ADMIN' || profile.role === 'TRIAGEM';
   }, [profile]);
 
+  const hasLocalChanges = useMemo(() => {
+    if (!agendamentos || !localAgendamentos) return false;
+    const agendamentosOriginaisMap = new Map(agendamentos.map(a => [a.id, a]));
+    return localAgendamentos.some(localAg => {
+      const originalAg = agendamentosOriginaisMap.get(localAg.id);
+      return originalAg && !isEqual(localAg, originalAg);
+    });
+  }, [agendamentos, localAgendamentos]);
+
   return (
     <div className="space-y-4 relative">
-      {triageAttendantNames && (
-        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
-          <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É:&nbsp;
-            <span className="font-bold">
-              {triageAttendantNames}
-            </span>
-          </p>
-        </div>
-      )}
-
       <Card className="mb-4 shadow-sm">
-        <CardHeader className="pb-0 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-lg font-semibold">Atendimentos do Dia</CardTitle>
+          {canManageData && (
+            <Button 
+              onClick={() => saveAndArchiveMutation.mutate(localAgendamentos)}
+              disabled={!hasLocalChanges || saveAndArchiveMutation.isPending}
+            >
+              {saveAndArchiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Salvar e Arquivar Concluídos
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
@@ -220,38 +217,7 @@ const AgendamentosPanel = () => {
               Atualizar Lista
             </Button>
           )}
-          {canManageData && (
-            <>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={localAgendamentos.length === 0}>
-                    <Archive className="mr-2 h-4 w-4" />
-                    Arquivar e Limpar Lista
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Esta ação moverá **TODOS os agendamentos atualmente visíveis nesta lista** para o histórico e os removerá da tabela principal.
-                      Isso não pode ser desfeito.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => archiveMutation.mutate(localAgendamentos.map(ag => ag.id))}
-                      disabled={archiveMutation.isPending}
-                    >
-                      {archiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Confirmar e Arquivar
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <ImportAgendamentos />
-            </>
-          )}
+          {canManageData && <ImportAgendamentos />}
         </div>
 
         <Button onClick={() => setIsAddAgendamentoDialogOpen(true)}>

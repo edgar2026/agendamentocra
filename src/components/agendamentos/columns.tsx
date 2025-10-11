@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Agendamento, AgendamentoStatus, Atendente, Profile } from "@/types"
-import { MoreVertical, ArrowUpDown, Check, X, Trash2, RotateCcw, Edit } from "lucide-react" // Megaphone removido
+import { MoreVertical, ArrowUpDown, Check, X, Trash2, RotateCcw, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -35,37 +35,9 @@ const StatusBadge = ({ status }: { status: AgendamentoStatus }) => {
 };
 
 const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, onUpdate: (ag: Agendamento) => void }) => {
-  const queryClient = useQueryClient();
-  const today = format(new Date(), "yyyy-MM-dd");
-
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status, compareceu }: { id: string, status: AgendamentoStatus, compareceu: boolean | null }) => {
-      const { error, data } = await supabase
-        .from("agendamentos")
-        .update({ status, compareceu, status_atendimento: status })
-        .eq("id", id)
-        .select()
-        .single();
-      if (error) throw new Error(error.message);
-      return data;
-    },
-    onSuccess: (data) => {
-      onUpdate(data);
-      toast.success("Status do agendamento atualizado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'daily'] });
-      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
-      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
-    },
-    onError: (err) => {
-      toast.error(`Erro ao salvar: ${err.message}`);
-    },
-  });
-
   const handleStatusUpdate = (status: AgendamentoStatus, compareceu: boolean | null) => {
     const optimisticUpdate = { ...agendamento, status, compareceu, status_atendimento: status };
     onUpdate(optimisticUpdate);
-    updateStatusMutation.mutate({ id: agendamento.id, status, compareceu });
   };
 
   return (
@@ -75,7 +47,6 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
         size="icon"
         className="h-8 w-8 text-success hover:bg-success/10 hover:text-success"
         onClick={() => handleStatusUpdate("COMPARECEU", true)}
-        disabled={updateStatusMutation.isPending}
         title="Marcar como Compareceu"
       >
         <Check className="h-4 w-4" />
@@ -85,7 +56,6 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
         size="icon"
         className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
         onClick={() => handleStatusUpdate("NAO_COMPARECEU", false)}
-        disabled={updateStatusMutation.isPending}
         title="Marcar como Não Compareceu"
       >
         <X className="h-4 w-4" />
@@ -95,7 +65,6 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
         size="icon"
         className="h-8 w-8 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
         onClick={() => handleStatusUpdate("AGENDADO", null)}
-        disabled={updateStatusMutation.isPending}
         title="Desmarcar status"
       >
         <RotateCcw className="h-4 w-4" />
@@ -168,24 +137,6 @@ export const getColumns = (
       const queryClient = useQueryClient();
       const today = format(new Date(), "yyyy-MM-dd");
 
-      // const canManage = profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM'; // Não é mais necessário para chamar no painel
-
-      // const callToPanelMutation = useMutation({ // Removido
-      //   mutationFn: async (ag: Agendamento) => {
-      //     const { error } = await supabase.from("chamadas_painel").insert({
-      //       nome_aluno: ag.nome_aluno,
-      //       guiche: ag.guiche || ag.atendente,
-      //     });
-      //     if (error) throw new Error(error.message);
-      //   },
-      //   onSuccess: () => {
-      //     toast.success(`${agendamento.nome_aluno} foi chamado(a) no painel!`);
-      //   },
-      //   onError: (error) => {
-      //     toast.error(`Erro ao chamar no painel: ${error.message}`);
-      //   },
-      // });
-
       const deleteAgendamentoMutation = useMutation({
         mutationFn: async (id: string) => {
           const { error } = await supabase.from("agendamentos").delete().eq("id", id);
@@ -195,8 +146,7 @@ export const getColumns = (
           toast.success("Agendamento excluído com sucesso!");
           queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
           queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
-          // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
-          queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
+          queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] });
         },
         onError: (error) => {
           toast.error(`Erro ao excluir agendamento: ${error.message}`);
@@ -214,17 +164,11 @@ export const getColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {/* {canManage && ( // Removido
-                <DropdownMenuItem onClick={() => callToPanelMutation.mutate(agendamento)}>
-                  <Megaphone className="mr-2 h-4 w-4 text-primary" />
-                  Chamar no Painel
-                </DropdownMenuItem>
-              )} */}
               <DropdownMenuItem onClick={() => onEdit(agendamento)}>
                 <Edit className="mr-2 h-4 w-4" />
                 Editar Agendamento
               </DropdownMenuItem>
-              {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && ( // Mantido o controle de acesso para exclusão
+              {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
