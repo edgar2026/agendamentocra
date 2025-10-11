@@ -158,7 +158,7 @@ const AgendamentosPanel = () => {
 
   const canManageData = useMemo(() => {
     if (!profile) return false;
-    return profile.role === 'ADMIN' || profile.role === 'TRIAGEM';
+    return profile.role === 'ADMIN' || profile.role === 'TRIAGEM' || profile.role === 'ATENDENTE';
   }, [profile]);
 
   const hasLocalChanges = useMemo(() => {
