@@ -1,7 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AtendenteTable } from "@/components/admin/AtendenteTable";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
-import { ExportHistorico } from "@/components/admin/ExportHistorico"; // Importar o novo componente
+import { ExportHistorico } from "@/components/admin/ExportHistorico";
+import { ArchiveHistory } from "@/components/admin/ArchiveHistory"; // Importando o novo componente
 
 const queryClient = new QueryClient();
 
@@ -9,8 +10,11 @@ const AdminPanel = () => {
   return (
     <div className="space-y-12">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight mb-2">Exportar Relatórios</h2>
-        <ExportHistorico />
+        <h2 className="text-2xl font-bold tracking-tight mb-2">Operações de Dados</h2>
+        <div className="space-y-6">
+          <ExportHistorico />
+          <ArchiveHistory />
+        </div>
       </div>
       <div>
         <h2 className="text-2xl font-bold tracking-tight mb-2">Gerenciar Atendentes</h2>
