@@ -1,14 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { UserNav } from "@/components/layout/UserNav";
-import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react";
+import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react"; // MonitorPlay removido
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Clock } from "@/components/layout/Clock";
-import { useTheme } from "@/contexts/ThemeContext"; // Import useTheme
 
 const navItems = [
   { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  // { href: "/painel", label: "Painel", icon: MonitorPlay, roles: ['ADMIN', 'TRIAGEM'] }, // Removido
   { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
 ];
 
@@ -19,13 +19,12 @@ interface HeaderProps {
 export function Header({ title }: HeaderProps) {
   const location = useLocation();
   const { profile } = useAuth();
-  const { currentTheme } = useTheme(); // Use o hook useTheme
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2 font-semibold text-primary">
-          <span className="text-2xl">{currentTheme.emoji}</span> {/* Exibir o emoji do tema */}
+          <BarChart2 className="h-6 w-6 text-primary" />
           <span>UNINASSAU</span>
         </Link>
         <nav className="hidden md:flex items-center space-x-4">
