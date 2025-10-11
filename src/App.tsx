@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { useAuth } from "./contexts/AuthContext";
 import { Layout } from "./components/layout/Layout";
 import { RoleGuard } from "./components/auth/RoleGuard";
+import { ThemeProvider } from "./contexts/ThemeContext"; // Import ThemeProvider
 
 function App() {
   const { session, loading } = useAuth();
@@ -23,24 +24,26 @@ function App() {
   return (
     <BrowserRouter>
       <Toaster position="top-right" richColors />
-      <Routes>
-        <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
-        
-        {/* Rotas Protegidas com o Layout */}
-        <Route element={session ? <Layout /> : <Navigate to="/login" />}>
-          <Route path="/" element={<Home />} />
+      <ThemeProvider> {/* Wrap with ThemeProvider */}
+        <Routes>
+          <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+          {/* Rotas Protegidas com o Layout */}
+          <Route element={session ? <Layout /> : <Navigate to="/login" />}>
+            <Route path="/" element={<Home />} />
+            
+            <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Route>
+            
+            <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
+              <Route path="/admin" element={<Admin />} />
+            </Route>
           </Route>
-          
-          <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
-            <Route path="/admin" element={<Admin />} />
-          </Route>
-        </Route>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
