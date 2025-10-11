@@ -31,90 +31,79 @@ export const themes: Theme[] = [
     name: 'Verão',
     emoji: '🌞🏖️',
     description: 'Fundo ensolarado, estilo praiano.',
-    primary: { hue: 45, saturation: 100, lightness: 50 }, // Amarelo vibrante
-    background: { hue: 200, saturation: 80, lightness: 90 }, // Azul-céu claro
-    triggerMonth: 1, // Janeiro
+    primary: { hue: 35, saturation: 85, lightness: 52 }, // Laranja-sol
+    background: { hue: 45, saturation: 100, lightness: 96 }, // Amarelo bem claro (areia)
   },
   {
     id: 'carnival',
     name: 'Carnaval',
     emoji: '🎭✨🎉',
     description: 'Fundo com confetes e alegria.',
-    primary: { hue: 270, saturation: 70, lightness: 50 }, // Roxo
-    background: { hue: 60, saturation: 90, lightness: 80 }, // Amarelo claro
-    triggerMonth: 2, // Fevereiro (pode se estender a Março dependendo do ano)
+    primary: { hue: 280, saturation: 80, lightness: 58 }, // Roxo vibrante
+    background: { hue: 50, saturation: 100, lightness: 97 }, // Amarelo pastel
   },
   {
     id: 'easter',
     name: 'Páscoa',
     emoji: '🐰🥚🌷',
     description: 'Fundo com ovos e flores.',
-    primary: { hue: 270, saturation: 50, lightness: 70 }, // Lilás
-    background: { hue: 330, saturation: 60, lightness: 90 }, // Rosa claro
-    triggerMonth: 3, // Março (pode se estender a Abril dependendo do ano)
+    primary: { hue: 265, saturation: 60, lightness: 65 }, // Lilás suave
+    background: { hue: 120, saturation: 60, lightness: 96 }, // Verde menta bem claro
   },
   {
     id: 'mothers-day',
     name: 'Mês das Mães',
     emoji: '💐❤️',
     description: 'Estilo delicado, com flores.',
-    primary: { hue: 330, saturation: 70, lightness: 60 }, // Rosa
-    background: { hue: 0, saturation: 0, lightness: 100 }, // Branco
-    triggerMonth: 5, // Maio
+    primary: { hue: 340, saturation: 82, lightness: 60 }, // Rosa rico
+    background: { hue: 340, saturation: 100, lightness: 98 }, // Fundo rosa muito pálido
   },
   {
     id: 'sao-joao',
     name: 'São João',
     emoji: '🎆🌽🔥',
     description: 'Fundo de festa junina (bandeirinhas).',
-    primary: { hue: 0, saturation: 70, lightness: 50 }, // Vermelho
-    background: { hue: 45, saturation: 90, lightness: 70 }, // Amarelo alaranjado
-    triggerMonth: 6, // Junho
+    primary: { hue: 15, saturation: 80, lightness: 50 }, // Laranja-vermelho (fogueira)
+    background: { hue: 40, saturation: 55, lightness: 95 }, // Bege claro (palha)
   },
   {
     id: 'fathers-day',
     name: 'Dia dos Pais',
     emoji: '👔💙',
     description: 'Tema elegante, masculino.',
-    primary: { hue: 220, saturation: 60, lightness: 30 }, // Azul escuro
-    background: { hue: 210, saturation: 10, lightness: 90 }, // Cinza claro
-    triggerMonth: 8, // Agosto
+    primary: { hue: 220, saturation: 60, lightness: 40 }, // Azul marinho
+    background: { hue: 210, saturation: 20, lightness: 94 }, // Cinza azulado claro
   },
   {
     id: 'september-yellow',
     name: 'Setembro Amarelo',
     emoji: '💛🌻',
     description: 'Fundo com fitas e girassóis.',
-    primary: { hue: 50, saturation: 100, lightness: 50 }, // Amarelo
-    background: { hue: 0, saturation: 0, lightness: 100 }, // Branco
-    triggerMonth: 9, // Setembro
+    primary: { hue: 48, saturation: 95, lightness: 48 }, // Amarelo-ouro
+    background: { hue: 50, saturation: 100, lightness: 97 }, // Amarelo muito pálido
   },
   {
     id: 'october-pink',
     name: 'Outubro Rosa',
     emoji: '🎀🌸',
     description: 'Fundo feminino e inspirador.',
-    primary: { hue: 330, saturation: 80, lightness: 70 }, // Rosa claro
-    background: { hue: 330, saturation: 60, lightness: 95 }, // Rosa muito claro
-    triggerMonth: 10, // Outubro
+    primary: { hue: 335, saturation: 85, lightness: 55 }, // Rosa forte
+    background: { hue: 340, saturation: 100, lightness: 98 }, // Rosa extremamente claro
   },
   {
     id: 'november-blue',
     name: 'Novembro Azul',
     emoji: '💙👨',
     description: 'Fundo clean, com laços azuis.',
-    primary: { hue: 210, saturation: 70, lightness: 50 }, // Azul claro
-    background: { hue: 210, saturation: 30, lightness: 90 }, // Azul muito claro
-    triggerMonth: 11, // Novembro
+    primary: { hue: 215, saturation: 70, lightness: 48 }, // Azul royal
+    background: { hue: 210, saturation: 100, lightness: 97 }, // Azul muito claro
   },
   {
     id: 'christmas',
     name: 'Natal',
     emoji: '🎄🎅⭐',
     description: 'Fundo natalino com neve e luzes.',
-    primary: { hue: 120, saturation: 60, lightness: 30 }, // Verde escuro
-    background: { hue: 0, saturation: 70, lightness: 50 }, // Vermelho
-    triggerMonth: 12, // Dezembro
-    triggerDay: 25, // Dia específico para o Natal
+    primary: { hue: 0, saturation: 65, lightness: 45 }, // Vermelho natalino
+    background: { hue: 30, saturation: 40, lightness: 96 }, // Fundo marfim/creme
   },
 ];
