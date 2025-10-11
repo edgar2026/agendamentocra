@@ -29,7 +29,17 @@ export const getHistoricoColumns = (
   },
   {
     accessorKey: "data_agendamento",
-    header: "Data",
+    header: "Data do Atendimento",
+    cell: ({ row }) => {
+      const dateString = row.original.data_agendamento;
+      if (!dateString) return "-";
+      try {
+        const [year, month, day] = dateString.split('-');
+        return `${day}/${month}/${year}`;
+      } catch (e) {
+        return dateString; // Fallback para o formato original em caso de erro
+      }
+    },
   },
   {
     accessorKey: "tipo_atendimento",
