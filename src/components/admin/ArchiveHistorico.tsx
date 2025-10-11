@@ -15,10 +15,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useAuth } from "@/contexts/AuthContext"; // Importar o hook de autenticação
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ArchiveHistorico() {
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
+  const { profile } = useAuth();
 
   const archiveMutation = useMutation({
     mutationFn: async () => {
@@ -34,15 +34,15 @@ export function ArchiveHistorico() {
     },
   });
 
-  // Se o usuário não tiver o perfil ou o papel não for 'DESENVOLVEDOR', não renderiza nada.
-  if (profile?.role !== 'DESENVOLVEDOR') {
+  // Agora, apenas o ADMIN pode ver este componente.
+  if (profile?.role !== 'ADMIN') {
     return null;
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Arquivar Histórico de Agendamentos (Acesso Restrito)</CardTitle>
+        <CardTitle>Arquivar Histórico de Agendamentos</CardTitle>
         <CardDescription>
           Esta ação irá exportar **todos** os dados da tabela de histórico para um arquivo CSV no Supabase Storage e, em seguida, limpará a tabela para liberar espaço no banco de dados. Use esta função quando o uso do seu banco de dados estiver alto.
         </CardDescription>
