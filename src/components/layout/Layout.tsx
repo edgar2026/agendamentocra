@@ -4,9 +4,9 @@ import { Footer } from "./Footer";
 
 const pageTitles: { [key: string]: string } = {
   "/": "Painel de Atendimentos",
+  "/historico": "Histórico de Atendimentos", // Novo título
   "/dashboard": "Dashboard Gerencial",
   "/admin": "Painel Administrativo",
-  // "/painel": "Painel de Chamadas", // Removido
 };
 
 export function Layout() {
