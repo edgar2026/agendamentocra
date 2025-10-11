@@ -30,13 +30,12 @@ function App() {
         <Route element={session ? <Layout /> : <Navigate to="/login" />}>
           <Route path="/" element={<Home />} />
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
-          
-          <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
-            <Route path="/admin" element={<Admin />} />
-          </Route>
+          {/* 
+            ATENÇÃO: RoleGuards removidos temporariamente para recuperação de acesso de emergência.
+            A segurança será reativada assim que o acesso do administrador for restaurado.
+          */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<Admin />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
