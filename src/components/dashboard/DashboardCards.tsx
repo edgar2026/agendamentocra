@@ -164,7 +164,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
         <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-0">
-            <CardTitle className="text-lg font-medium">Atendimentos sem Nº do Chamado</CardTitle>
+            <CardTitle className="text-lg font-medium">Atendimento Expontâneo sem Número do Chamado</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent className="pt-0">
@@ -172,7 +172,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
               {isLoadingPendencias ? "Carregando..." : pendenciasProcesso}
             </div>
             <p className="text-xs text-muted-foreground">
-              Atendimentos manuais sem Nº do Chamado
+              Atendimentos expontâneos sem Nº do Chamado
             </p>
           </CardContent>
         </Card>
