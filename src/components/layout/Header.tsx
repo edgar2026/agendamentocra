@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { UserNav } from "@/components/layout/UserNav";
-import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react"; // MonitorPlay removido
+import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Clock } from "@/components/layout/Clock";
@@ -8,7 +8,6 @@ import { Clock } from "@/components/layout/Clock";
 const navItems = [
   { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
-  // { href: "/painel", label: "Painel", icon: MonitorPlay, roles: ['ADMIN', 'TRIAGEM'] }, // Removido
   { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
 ];
 
@@ -29,10 +28,9 @@ export function Header({ title }: HeaderProps) {
         </Link>
         <nav className="hidden md:flex items-center space-x-4">
           {navItems.map((item) => {
-            // ATENÇÃO: Verificação de papel removida temporariamente para recuperação de acesso.
-            // if (!profile || !item.roles.includes(profile.role)) {
-            //   return null;
-            // }
+            if (!profile || !item.roles.includes(profile.role)) {
+              return null;
+            }
 
             const commonClasses = "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground";
             const activeClasses = location.pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground";
