@@ -193,7 +193,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
               id="nome_aluno"
               {...register("nome_aluno")}
               className="col-span-3"
-              onChange={handleInputChange}
+              readOnly
             />
             {errors.nome_aluno && <p className="col-span-4 text-red-500 text-sm text-right">{errors.nome_aluno.message}</p>}
           </div>
