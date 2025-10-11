@@ -29,9 +29,10 @@ export function Header({ title }: HeaderProps) {
         </Link>
         <nav className="hidden md:flex items-center space-x-4">
           {navItems.map((item) => {
-            if (!profile || !item.roles.includes(profile.role)) {
-              return null;
-            }
+            // ATENÇÃO: Verificação de papel removida temporariamente para recuperação de acesso.
+            // if (!profile || !item.roles.includes(profile.role)) {
+            //   return null;
+            // }
 
             const commonClasses = "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground";
             const activeClasses = location.pathname === item.href ? "bg-accent text-accent-foreground" : "text-muted-foreground";
