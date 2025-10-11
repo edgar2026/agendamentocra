@@ -34,8 +34,10 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>
           
-          {/* Rota de Admin temporariamente aberta para correção de permissão. A segurança será reativada em seguida. */}
-          <Route path="/admin" element={<Admin />} />
+          {/* Rota de Admin agora permite acesso para ADMIN e DESENVOLVEDOR */}
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'DESENVOLVEDOR']} />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFound />} />
