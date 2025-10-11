@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,8 +15,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useAuth } from "@/contexts/AuthContext"; // Importar o hook de autenticação
 
 export function ArchiveHistorico() {
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
+
   const archiveMutation = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('archive-historico-to-storage');
@@ -32,10 +34,15 @@ export function ArchiveHistorico() {
     },
   });
 
+  // Se o usuário não tiver o perfil ou o papel não for 'DESENVOLVEDOR', não renderiza nada.
+  if (profile?.role !== 'DESENVOLVEDOR') {
+    return null;
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Arquivar Histórico de Agendamentos</CardTitle>
+        <CardTitle>Arquivar Histórico de Agendamentos (Acesso Restrito)</CardTitle>
         <CardDescription>
           Esta ação irá exportar **todos** os dados da tabela de histórico para um arquivo CSV no Supabase Storage e, em seguida, limpará a tabela para liberar espaço no banco de dados. Use esta função quando o uso do seu banco de dados estiver alto.
         </CardDescription>
