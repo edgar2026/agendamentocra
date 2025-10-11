@@ -10,7 +10,7 @@ import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankin
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
 import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const queryClient = new QueryClient();
@@ -31,24 +31,24 @@ const DashboardPanel = () => {
     <div className="space-y-8">
       <PinkOctoberBanner />
       <Card className="mb-4 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold">Seleção de Período</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <CardTitle className="text-lg font-semibold flex-shrink-0">Seleção de Período</CardTitle>
+          <div className="flex items-center gap-4">
+            <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="flex-shrink-0">
+              <ToggleGroupItem value="daily" aria-label="Visualização Diária" variant="outline">
+                Dia
+              </ToggleGroupItem>
+              <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline">
+                Mês
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <DatePicker
+              date={selectedDate}
+              setDate={setSelectedDate}
+              placeholder={viewMode === 'daily' ? "Selecione a data do Dashboard" : "Selecione o mês do Dashboard"}
+            />
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row justify-end items-center gap-4">
-          <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="flex-shrink-0">
-            <ToggleGroupItem value="daily" aria-label="Visualização Diária" variant="outline">
-              Dia
-            </ToggleGroupItem>
-            <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline">
-              Mês
-            </ToggleGroupItem>
-          </ToggleGroup>
-          <DatePicker
-            date={selectedDate}
-            setDate={setSelectedDate}
-            placeholder={viewMode === 'daily' ? "Selecione a data do Dashboard" : "Selecione o mês do Dashboard"}
-          />
-        </CardContent>
       </Card>
       
       <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
