@@ -1,15 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
 import { UserNav } from "@/components/layout/UserNav";
-import { Home, LayoutDashboard, Settings, BarChart2, History } from "lucide-react"; // Importando o ícone History
+import { Home, LayoutDashboard, Settings, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Clock } from "@/components/layout/Clock";
 
 const navItems = [
-  { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER'] },
-  { href: "/historico", label: "Histórico", icon: History, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER'] }, // Novo item de menu
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER'] },
-  { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN', 'DEVELOPER'] },
+  { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
 ];
 
 interface HeaderProps {

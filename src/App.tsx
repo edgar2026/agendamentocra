@@ -8,7 +8,6 @@ import { Toaster } from "sonner";
 import { useAuth } from "./contexts/AuthContext";
 import { Layout } from "./components/layout/Layout";
 import { RoleGuard } from "./components/auth/RoleGuard";
-import Historico from "./pages/Historico"; // Importando a nova página
 
 function App() {
   const { session, loading } = useAuth();
@@ -30,13 +29,12 @@ function App() {
         {/* Rotas Protegidas com o Layout */}
         <Route element={session ? <Layout /> : <Navigate to="/login" />}>
           <Route path="/" element={<Home />} />
-          <Route path="/historico" element={<Historico />} /> {/* Nova rota */}
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'DEVELOPER']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
             <Route path="/admin" element={<Admin />} />
           </Route>
         </Route>
