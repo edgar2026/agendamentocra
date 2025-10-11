@@ -24,6 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const queryClient = new QueryClient();
 
@@ -174,6 +175,7 @@ const AgendamentosPanel = () => {
 
   return (
     <div className="space-y-4 relative">
+      <PinkOctoberBanner />
       {triageAttendantNames && (
         <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
           <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É:&nbsp;

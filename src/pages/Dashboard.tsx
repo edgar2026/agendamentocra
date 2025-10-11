@@ -10,7 +10,8 @@ import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankin
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
 import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Importando componentes Card
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const queryClient = new QueryClient();
 
@@ -28,16 +29,17 @@ const DashboardPanel = () => {
 
   return (
     <div className="space-y-8">
-      <Card className="mb-4 shadow-sm"> {/* Envolvendo a seleção de período em um Card */}
+      <PinkOctoberBanner />
+      <Card className="mb-4 shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-semibold">Seleção de Período</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row justify-end items-center gap-4">
           <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="flex-shrink-0">
-            <ToggleGroupItem value="daily" aria-label="Visualização Diária" variant="outline"> {/* Adicionado variant="outline" */}
+            <ToggleGroupItem value="daily" aria-label="Visualização Diária" variant="outline">
               Dia
             </ToggleGroupItem>
-            <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline"> {/* Adicionado variant="outline" */}
+            <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline">
               Mês
             </ToggleGroupItem>
           </ToggleGroup>
