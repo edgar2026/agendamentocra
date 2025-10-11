@@ -1,4 +1,7 @@
 import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -8,9 +11,6 @@ import {
 } from "@/components/ui/select";
 import { Agendamento, Atendente } from "@/types";
 import { Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 interface AtendenteSelectCellProps {
   agendamento: Agendamento;
@@ -20,26 +20,28 @@ interface AtendenteSelectCellProps {
 }
 
 const AtendenteSelectCell: React.FC<AtendenteSelectCellProps> = ({ agendamento, atendentes, isLoading, onUpdate }) => {
-  const updateAtendenteMutation = useMutation({
-    mutationFn: async (variables: { atendente: string | null, guiche: string | null }) => {
-      const { error } = await supabase
-        .from("agendamentos")
-        .update({ atendente: variables.atendente, guiche: variables.guiche })
-        .eq("id", agendamento.id);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: (_, variables) => {
-      toast.success(`Atendente ${variables.atendente ? 'atribuído' : 'removido'}.`);
-      onUpdate({ ...agendamento, atendente: variables.atendente, guiche: variables.guiche });
-    },
-    onError: (error) => {
-      toast.error(`Erro ao atualizar: ${error.message}`);
-    },
-  });
-
   const getAtendenteIdFromName = (name: string | undefined | null) => {
     return atendentes?.find(att => att.name === name)?.id || "";
   };
+
+  const updateAgendamentoMutation = useMutation({
+    mutationFn: async ({ id, atendenteName, guiche }: { id: string, atendenteName: string | null, guiche: string | null }) => {
+      const { data, error } = await supabase
+        .from("agendamentos")
+        .update({ atendente: atendenteName, guiche: guiche })
+        .eq("id", id)
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      return data;
+    },
+    onSuccess: (data) => {
+      onUpdate(data);
+    },
+    onError: (err) => {
+      toast.error(`Erro ao salvar atendente: ${err.message}`);
+    },
+  });
 
   const handleAtendenteChange = (newId: string) => {
     let atendenteName: string | null = null;
@@ -50,14 +52,22 @@ const AtendenteSelectCell: React.FC<AtendenteSelectCellProps> = ({ agendamento, 
       atendenteName = selectedAtendente?.name || null;
       guiche = selectedAtendente?.guiche || null;
     }
-    
-    updateAtendenteMutation.mutate({ atendente: atendenteName, guiche });
+
+    // Atualização otimista local
+    onUpdate({ ...agendamento, atendente: atendenteName, guiche });
+
+    // Mutação para o banco de dados
+    updateAgendamentoMutation.mutate({
+      id: agendamento.id,
+      atendenteName,
+      guiche,
+    });
   };
 
   const currentAtendenteId = getAtendenteIdFromName(agendamento.atendente);
   const currentAtendenteName = agendamento.atendente || "Selecionar Atendente";
 
-  if (isLoading || updateAtendenteMutation.isPending) {
+  if (isLoading) {
     return <Loader2 className="h-4 w-4 animate-spin" />;
   }
 
@@ -65,6 +75,7 @@ const AtendenteSelectCell: React.FC<AtendenteSelectCellProps> = ({ agendamento, 
     <Select
       value={currentAtendenteId}
       onValueChange={handleAtendenteChange}
+      disabled={updateAgendamentoMutation.isPending}
     >
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder={currentAtendenteName} />
