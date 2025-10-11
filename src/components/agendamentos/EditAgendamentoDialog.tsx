@@ -264,7 +264,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
                   <SelectItem value="loading" disabled>Carregando atendentes...</SelectItem>
                 ) : (
                   atendentes?.map((att) => (
-                    <SelectItem key={att.id} value={att.name}>
+                    <SelectItem key={att.id} value={att.id}>
                       {att.name}
                     </SelectItem>
                   ))
