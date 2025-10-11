@@ -28,6 +28,10 @@ export const getHistoricoColumns = (
     ),
   },
   {
+    accessorKey: "matricula", // Adicionando a coluna de Matrícula
+    header: "Matrícula",
+  },
+  {
     accessorKey: "data_agendamento",
     header: "Data do Atendimento",
     cell: ({ row }) => {
