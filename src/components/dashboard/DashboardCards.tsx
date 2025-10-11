@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, CheckCircle2, XCircle, PlusCircle } from "lucide-react";
+import { CalendarDays, CheckCircle2, XCircle, PlusCircle, AlertTriangle } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardCardsProps {
   selectedDate: string;
@@ -10,6 +11,7 @@ interface DashboardCardsProps {
 }
 
 export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) {
+  const { profile } = useAuth();
   const displayDate = format(parseISO(selectedDate), "dd/MM/yyyy");
   const dateObj = parseISO(selectedDate);
   const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
@@ -70,10 +72,20 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
     queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "MANUAL")),
   });
 
+  const { data: pendenciasProcesso, isLoading: isLoadingPendencias } = useQuery<number>({
+    queryKey: ["dashboardPendenciasProcesso", selectedDate, viewMode],
+    queryFn: () => fetchCombinedCount(query =>
+      query
+        .eq("origem_agendamento", "MANUAL")
+        .or("processo_id.is.null,processo_id.eq.''")
+    ),
+    enabled: !!profile && (profile.role === 'ADMIN' || profile.role === 'TRIAGEM'),
+  });
+
   const periodText = viewMode === 'daily' ? `para ${displayDate}` : `para ${format(dateObj, "MM/yyyy")}`;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between pb-0">
           <CardTitle className="text-lg font-medium">Total de Agendamentos</CardTitle>
@@ -119,7 +131,6 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
         </CardContent>
       </Card>
 
-      {/* Novo cartão para Agendados (da planilha) */}
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between pb-0">
           <CardTitle className="text-lg font-medium">Agendados (Planilha)</CardTitle>
@@ -135,7 +146,6 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
         </CardContent>
       </Card>
 
-      {/* Novo cartão para Expontâneos (manual) */}
       <Card className="shadow-elevated border-l-4 border-secondary transition-all duration-300 hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between pb-0">
           <CardTitle className="text-lg font-medium">Expontâneos (Manual)</CardTitle>
@@ -150,6 +160,23 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
           </p>
         </CardContent>
       </Card>
+
+      {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
+        <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
+          <CardHeader className="flex flex-row items-center justify-between pb-0">
+            <CardTitle className="text-lg font-medium">Pendências de Processo</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="text-3xl font-bold text-destructive">
+              {isLoadingPendencias ? "Carregando..." : pendenciasProcesso}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Atendimentos manuais sem Nº do Chamado
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
