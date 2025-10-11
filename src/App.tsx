@@ -3,6 +3,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
+import FiltrarHistorico from "./pages/FiltrarHistorico";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
 import { useAuth } from "./contexts/AuthContext";
@@ -36,6 +37,7 @@ function App() {
           
           <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/filtrar-historico" element={<FiltrarHistorico />} />
           </Route>
           
           <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>

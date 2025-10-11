@@ -6,7 +6,7 @@ const pageTitles: { [key: string]: string } = {
   "/": "Painel de Atendimentos",
   "/dashboard": "Dashboard Gerencial",
   "/admin": "Painel Administrativo",
-  // "/painel": "Painel de Chamadas", // Removido
+  "/filtrar-historico": "Filtrar Histórico",
 };
 
 export function Layout() {
