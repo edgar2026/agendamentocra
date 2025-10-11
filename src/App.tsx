@@ -10,9 +10,13 @@ import { Layout } from "./components/layout/Layout";
 import { RoleGuard } from "./components/auth/RoleGuard";
 
 function App() {
-  const { session, loading } = useAuth();
+  const { session, loading, profileLoading } = useAuth();
 
-  if (loading) {
+  // A aplicação está carregando se a sessão inicial ainda não foi verificada,
+  // ou se o usuário está logado mas seu perfil ainda está sendo buscado.
+  const isAppLoading = loading || (session && profileLoading);
+
+  if (isAppLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         Carregando...
