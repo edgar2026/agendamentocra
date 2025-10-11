@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ShieldCheck, Shield, UserCheck } from "lucide-react";
+import { MoreHorizontal, ShieldCheck, Shield, UserCheck, Code } from "lucide-react"; // Adicionado ícone Code
 
 import { Profile, UserRole } from "@/types";
 import { DataTable } from "@/components/agendamentos/data-table";
@@ -25,12 +25,14 @@ const RoleBadge = ({ role }: { role: UserRole }) => {
         ADMIN: "destructive",
         ATENDENTE: "secondary",
         TRIAGEM: "default",
-    }[role] as "destructive" | "secondary" | "default";
+        DEVELOPER: "outline", // Novo estilo para Developer
+    }[role] as "destructive" | "secondary" | "default" | "outline";
 
     const roleText = {
         ADMIN: "Admin",
         ATENDENTE: "Atendente",
         TRIAGEM: "Triagem",
+        DEVELOPER: "Desenvolvedor", // Novo texto
     }[role];
 
     return <Badge variant={variant}>{roleText}</Badge>;
@@ -97,6 +99,10 @@ export function UserManagementTable() {
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
+                    <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'DEVELOPER' })}>
+                      <Code className="mr-2 h-4 w-4" />
+                      Desenvolvedor
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'ADMIN' })}>
                       <ShieldCheck className="mr-2 h-4 w-4" />
                       Admin

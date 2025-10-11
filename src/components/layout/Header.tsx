@@ -6,9 +6,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Clock } from "@/components/layout/Clock";
 
 const navItems = [
-  { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
-  { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
+  { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER'] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER'] },
+  { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN', 'DEVELOPER'] },
 ];
 
 interface HeaderProps {

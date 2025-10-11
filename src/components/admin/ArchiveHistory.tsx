@@ -35,8 +35,8 @@ export function ArchiveHistory() {
     },
   });
 
-  if (profile?.role !== 'ADMIN') {
-    return null; // Não renderiza nada se o usuário não for admin
+  if (profile?.role !== 'DEVELOPER') { // Alterado de 'ADMIN' para 'DEVELOPER'
+    return null; // Não renderiza nada se o usuário não for desenvolvedor
   }
 
   return (

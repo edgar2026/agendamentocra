@@ -30,11 +30,11 @@ function App() {
         <Route element={session ? <Layout /> : <Navigate to="/login" />}>
           <Route path="/" element={<Home />} />
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM', 'DEVELOPER']} />}>
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'DEVELOPER']} />}>
             <Route path="/admin" element={<Admin />} />
           </Route>
         </Route>

@@ -37,7 +37,7 @@ export interface ServiceType {
   created_at: string;
 }
 
-export type UserRole = 'ADMIN' | 'ATENDENTE' | 'TRIAGEM'; // Definindo os possíveis papéis de usuário
+export type UserRole = 'ADMIN' | 'ATENDENTE' | 'TRIAGEM' | 'DEVELOPER'; // Adicionado DEVELOPER
 
 export interface Profile {
   id: string;
