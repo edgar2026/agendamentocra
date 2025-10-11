@@ -35,10 +35,23 @@ const StatusBadge = ({ status }: { status: AgendamentoStatus }) => {
 };
 
 const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, onUpdate: (ag: Agendamento) => void }) => {
-  const handleStatusUpdate = (status: AgendamentoStatus, compareceu: boolean | null) => {
-    const optimisticUpdate = { ...agendamento, status, compareceu, status_atendimento: status };
-    onUpdate(optimisticUpdate);
-  };
+  const updateStatusMutation = useMutation({
+    mutationFn: async (variables: { status: AgendamentoStatus, compareceu: boolean | null }) => {
+      const { error } = await supabase
+        .from("agendamentos")
+        .update({ status: variables.status, compareceu: variables.compareceu, status_atendimento: variables.status })
+        .eq("id", agendamento.id);
+      if (error) throw new Error(error.message);
+      return variables;
+    },
+    onSuccess: (variables) => {
+      toast.success(`Status atualizado para ${variables.status}.`);
+      onUpdate({ ...agendamento, ...variables });
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atualizar status: ${error.message}`);
+    },
+  });
 
   return (
     <div className="flex items-center gap-1">
@@ -46,8 +59,9 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
         variant="ghost"
         size="icon"
         className="h-8 w-8 text-success hover:bg-success/10 hover:text-success"
-        onClick={() => handleStatusUpdate("COMPARECEU", true)}
+        onClick={() => updateStatusMutation.mutate({ status: "COMPARECEU", compareceu: true })}
         title="Marcar como Compareceu"
+        disabled={updateStatusMutation.isPending}
       >
         <Check className="h-4 w-4" />
       </Button>
@@ -55,8 +69,9 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
         variant="ghost"
         size="icon"
         className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-        onClick={() => handleStatusUpdate("NAO_COMPARECEU", false)}
+        onClick={() => updateStatusMutation.mutate({ status: "NAO_COMPARECEU", compareceu: false })}
         title="Marcar como Não Compareceu"
+        disabled={updateStatusMutation.isPending}
       >
         <X className="h-4 w-4" />
       </Button>
@@ -64,8 +79,9 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
         variant="ghost"
         size="icon"
         className="h-8 w-8 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-        onClick={() => handleStatusUpdate("AGENDADO", null)}
+        onClick={() => updateStatusMutation.mutate({ status: "AGENDADO", compareceu: null })}
         title="Desmarcar status"
+        disabled={updateStatusMutation.isPending}
       >
         <RotateCcw className="h-4 w-4" />
       </Button>

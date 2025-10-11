@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { useQuery, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useQuery, useMutation, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { isEqual } from "lodash";
 
 import { Agendamento, Atendente } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +13,7 @@ import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamento
 import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Search } from "lucide-react";
+import { Loader2, Search, Save } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -22,14 +23,14 @@ const HistoricoPanel = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  const [originalAgendamentos, setOriginalAgendamentos] = useState<Agendamento[]>([]);
   const [localAgendamentos, setLocalAgendamentos] = useState<Agendamento[]>([]);
 
-  const { data: fetchedAgendamentos, isLoading, isFetching, error, refetch } = useQuery<Agendamento[]>({
+  const { isFetching, error, refetch } = useQuery<Agendamento[]>({
     queryKey: ["historicoAgendamentos", startDate, endDate],
     queryFn: async () => {
-      if (!startDate || !endDate) {
-        return [];
-      }
+      if (!startDate || !endDate) return [];
       if (endDate < startDate) {
         toast.error("A data de fim não pode ser anterior à data de início.");
         return [];
@@ -38,42 +39,27 @@ const HistoricoPanel = () => {
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
-      // Busca em paralelo na tabela de agendamentos e no histórico
       const [
         { data: agendamentosAtuais, error: errorAtuais },
         { data: agendamentosHistorico, error: errorHistorico }
       ] = await Promise.all([
-        supabase
-          .from("agendamentos")
-          .select("*")
-          .gte("data_agendamento", formattedStartDate)
-          .lte("data_agendamento", formattedEndDate),
-        supabase
-          .from("agendamentos_historico")
-          .select("*")
-          .gte("data_agendamento", formattedStartDate)
-          .lte("data_agendamento", formattedEndDate),
+        supabase.from("agendamentos").select("*").gte("data_agendamento", formattedStartDate).lte("data_agendamento", formattedEndDate),
+        supabase.from("agendamentos_historico").select("*").gte("data_agendamento", formattedStartDate).lte("data_agendamento", formattedEndDate),
       ]);
 
       if (errorAtuais) throw new Error(`Erro ao buscar agendamentos atuais: ${errorAtuais.message}`);
       if (errorHistorico) throw new Error(`Erro ao buscar histórico: ${errorHistorico.message}`);
 
       const combinedData = [...(agendamentosAtuais || []), ...(agendamentosHistorico || [])];
-      
-      // Ordena os resultados combinados
       combinedData.sort((a, b) => new Date(b.data_agendamento).getTime() - new Date(a.data_agendamento).getTime() || a.nome_aluno.localeCompare(b.nome_aluno));
-
+      
+      setOriginalAgendamentos(combinedData);
+      setLocalAgendamentos(combinedData);
       return combinedData;
     },
-    enabled: false, // A query só será executada manualmente com refetch()
-    staleTime: 5 * 60 * 1000, // 5 minutos
+    enabled: false,
+    staleTime: 5 * 60 * 1000,
   });
-
-  useEffect(() => {
-    if (fetchedAgendamentos) {
-      setLocalAgendamentos(fetchedAgendamentos);
-    }
-  }, [fetchedAgendamentos]);
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
     queryKey: ["atendentes"],
@@ -85,6 +71,43 @@ const HistoricoPanel = () => {
     staleTime: Infinity,
   });
 
+  const saveChangesMutation = useMutation({
+    mutationFn: async (agendamentosParaSalvar: Agendamento[]) => {
+      const originalMap = new Map(originalAgendamentos.map(a => [a.id, a]));
+      const alterados = agendamentosParaSalvar.filter(local => {
+        const original = originalMap.get(local.id);
+        return original && !isEqual(local, original);
+      });
+
+      if (alterados.length === 0) {
+        toast.info("Nenhuma alteração para salvar.");
+        return { saved: 0 };
+      }
+
+      // Separar por tabela de origem
+      const atuaisAlterados = alterados.filter(a => originalAgendamentos.find(o => o.id === a.id && o.hasOwnProperty('user_id'))); // Simplificação, assumindo que só a tabela principal tem user_id
+      const historicoAlterados = alterados.filter(a => !atuaisAlterados.some(aa => aa.id === a.id));
+
+      if (atuaisAlterados.length > 0) {
+        const { error } = await supabase.from("agendamentos").upsert(atuaisAlterados);
+        if (error) throw new Error(`Erro ao salvar em 'agendamentos': ${error.message}`);
+      }
+      if (historicoAlterados.length > 0) {
+        const { error } = await supabase.from("agendamentos_historico").upsert(historicoAlterados);
+        if (error) throw new Error(`Erro ao salvar em 'agendamentos_historico': ${error.message}`);
+      }
+      
+      return { saved: alterados.length };
+    },
+    onSuccess: ({ saved }) => {
+      toast.success(`${saved} alterações foram salvas com sucesso!`);
+      refetch(); // Re-busca os dados para atualizar o estado original
+    },
+    onError: (error) => {
+      toast.error(`Erro ao salvar: ${error.message}`);
+    },
+  });
+
   const handleSearch = () => {
     if (!startDate || !endDate) {
       toast.warning("Por favor, selecione a data de início e a data de fim.");
@@ -94,11 +117,7 @@ const HistoricoPanel = () => {
   };
 
   const handleUpdateLocalAgendamento = (updatedAgendamento: Agendamento) => {
-    setLocalAgendamentos(currentAgendamentos =>
-      currentAgendamentos.map(ag =>
-        ag.id === updatedAgendamento.id ? updatedAgendamento : ag
-      )
-    );
+    setLocalAgendamentos(current => current.map(ag => ag.id === updatedAgendamento.id ? updatedAgendamento : ag));
   };
 
   const handleEditAgendamento = (agendamento: Agendamento) => {
@@ -111,13 +130,18 @@ const HistoricoPanel = () => {
     [atendentes, isLoadingAtendentes, profile]
   );
 
+  const hasLocalChanges = useMemo(() => {
+    if (originalAgendamentos.length === 0) return false;
+    return !isEqual(originalAgendamentos, localAgendamentos);
+  }, [originalAgendamentos, localAgendamentos]);
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Consultar Histórico de Atendimentos</CardTitle>
           <CardDescription>
-            Selecione um período para buscar e editar agendamentos passados, incluindo os que já foram arquivados.
+            Selecione um período para buscar e editar agendamentos passados. As alterações só são salvas ao clicar no botão "Salvar Alterações".
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row items-center gap-4">
@@ -127,12 +151,12 @@ const HistoricoPanel = () => {
             <DatePicker date={endDate} setDate={setEndDate} placeholder="Data de Fim" />
           </div>
           <Button onClick={handleSearch} disabled={isFetching}>
-            {isFetching ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="mr-2 h-4 w-4" />
-            )}
+            {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             {isFetching ? "Buscando..." : "Buscar"}
+          </Button>
+          <Button onClick={() => saveChangesMutation.mutate(localAgendamentos)} disabled={!hasLocalChanges || saveChangesMutation.isPending}>
+            {saveChangesMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Salvar Alterações
           </Button>
         </CardContent>
       </Card>

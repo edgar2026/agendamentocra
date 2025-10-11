@@ -1,39 +1,25 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useQuery, useMutation, QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Agendamento, Atendente } from "@/types";
 import { getColumns } from "@/components/agendamentos/columns";
 import { DataTable } from "@/components/agendamentos/data-table";
 import { AddAgendamentoDialog } from "@/components/agendamentos/AddAgendamentoDialog";
 import { EditAgendamentoDialog } from "@/components/agendamentos/EditAgendamentoDialog";
 import { ImportAgendamentos } from "@/components/agendamentos/ImportAgendamentos";
-import { format } from "date-fns";
 import { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Loader2, Archive, RefreshCw, CalendarDays, CheckCircle2, XCircle, Clock as ClockIcon, Save } from "lucide-react";
+import { PlusCircle, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { isEqual } from "lodash"; // Precisaremos de uma função para comparar objetos
 
 const queryClient = new QueryClient();
 
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const [isAddAgendamentoDialogOpen, setIsAddAgendamentoDialogOpen] = useState(false);
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditAgendamentoDialogOpen, setIsEditAgendamentoDialogOpen] = useState(false);
-  const [localAgendamentos, setLocalAgendamentos] = useState<Agendamento[]>([]);
   const [hasUpdates, setHasUpdates] = useState(false);
 
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
@@ -49,12 +35,6 @@ const AgendamentosPanel = () => {
       return data || [];
     },
   });
-
-  useEffect(() => {
-    if (agendamentos) {
-      setLocalAgendamentos(agendamentos);
-    }
-  }, [agendamentos]);
 
   useEffect(() => {
     const channel = supabase
@@ -83,49 +63,9 @@ const AgendamentosPanel = () => {
     staleTime: Infinity,
   });
 
-  const saveAndArchiveMutation = useMutation({
-    mutationFn: async (agendamentosParaSalvar: Agendamento[]) => {
-      // 1. Identificar agendamentos que foram realmente alterados
-      const agendamentosOriginaisMap = new Map(agendamentos?.map(a => [a.id, a]));
-      const agendamentosAlterados = agendamentosParaSalvar.filter(localAg => {
-        const originalAg = agendamentosOriginaisMap.get(localAg.id);
-        return originalAg && !isEqual(localAg, originalAg);
-      });
-
-      if (agendamentosAlterados.length > 0) {
-        const { error: upsertError } = await supabase.from("agendamentos").upsert(agendamentosAlterados);
-        if (upsertError) throw new Error(`Erro ao salvar alterações: ${upsertError.message}`);
-      }
-
-      // 2. Identificar agendamentos concluídos para arquivar
-      const idsParaArquivar = agendamentosParaSalvar
-        .filter(ag => ag.status === 'COMPARECEU' || ag.status === 'NAO_COMPARECEU')
-        .map(ag => ag.id);
-
-      if (idsParaArquivar.length > 0) {
-        const { error: archiveError } = await supabase.functions.invoke('archive-agendamentos', {
-          body: { agendamentoIds: idsParaArquivar },
-        });
-        if (archiveError) throw new Error(`Erro ao arquivar: ${archiveError.message}`);
-        return { saved: agendamentosAlterados.length, archived: idsParaArquivar.length };
-      }
-      
-      return { saved: agendamentosAlterados.length, archived: 0 };
-    },
-    onSuccess: ({ saved, archived }) => {
-      toast.success(`${saved} alterações salvas e ${archived} agendamentos arquivados com sucesso!`);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(`Erro na operação: ${error.message}`);
-    },
-  });
-
-  const handleUpdateLocalAgendamento = (updatedAgendamento: Agendamento) => {
-    setLocalAgendamentos(currentAgendamentos =>
-      currentAgendamentos.map(ag =>
-        ag.id === updatedAgendamento.id ? updatedAgendamento : ag
-      )
+  const handleUpdateAgendamento = (updatedAgendamento: Agendamento) => {
+    queryClient.setQueryData<Agendamento[]>(['agendamentos'], (oldData) =>
+      oldData?.map(ag => ag.id === updatedAgendamento.id ? updatedAgendamento : ag)
     );
   };
 
@@ -141,14 +81,9 @@ const AgendamentosPanel = () => {
   };
 
   const columns = useMemo(
-    () => getColumns(atendentes, isLoadingAtendentes, handleUpdateLocalAgendamento, handleEditAgendamento, profile),
+    () => getColumns(atendentes, isLoadingAtendentes, handleUpdateAgendamento, handleEditAgendamento, profile),
     [atendentes, isLoadingAtendentes, profile]
   );
-
-  const totalAgendamentosCount = localAgendamentos.length;
-  const compareceuCount = localAgendamentos.filter(ag => ag.compareceu === true).length;
-  const naoCompareceuCount = localAgendamentos.filter(ag => ag.compareceu === false).length;
-  const pendenteCount = localAgendamentos.filter(ag => ag.compareceu === null).length;
 
   const getAgendamentoRowClassName = (agendamento: Agendamento) => {
     if (agendamento.compareceu === true) return "bg-success/10 hover:bg-success/20";
@@ -158,57 +93,11 @@ const AgendamentosPanel = () => {
 
   const canManageData = useMemo(() => {
     if (!profile) return false;
-    return profile.role === 'ADMIN' || profile.role === 'TRIAGEM' || profile.role === 'ATENDENTE';
+    return profile.role === 'ADMIN' || profile.role === 'TRIAGEM';
   }, [profile]);
 
-  const hasLocalChanges = useMemo(() => {
-    if (!agendamentos || !localAgendamentos) return false;
-    const agendamentosOriginaisMap = new Map(agendamentos.map(a => [a.id, a]));
-    return localAgendamentos.some(localAg => {
-      const originalAg = agendamentosOriginaisMap.get(localAg.id);
-      return originalAg && !isEqual(localAg, originalAg);
-    });
-  }, [agendamentos, localAgendamentos]);
-
   return (
-    <div className="space-y-4 relative">
-      <Card className="mb-4 shadow-sm">
-        <CardHeader className="pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-lg font-semibold">Atendimentos do Dia</CardTitle>
-          {canManageData && (
-            <Button 
-              onClick={() => saveAndArchiveMutation.mutate(localAgendamentos)}
-              disabled={!hasLocalChanges || saveAndArchiveMutation.isPending}
-            >
-              {saveAndArchiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Salvar e Arquivar Concluídos
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
-            <CalendarDays className="h-5 w-5 mb-1" />
-            <span className="text-sm font-medium">Total</span>
-            <span className="text-xl font-bold">{totalAgendamentosCount}</span>
-          </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/10 text-success">
-            <CheckCircle2 className="h-5 w-5 mb-1" />
-            <span className="text-sm font-medium">Compareceu</span>
-            <span className="text-xl font-bold">{compareceuCount}</span>
-          </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/10 text-destructive">
-            <XCircle className="h-5 w-5 mb-1" />
-            <span className="text-sm font-medium">Não Compareceu</span>
-            <span className="text-xl font-bold">{naoCompareceuCount}</span>
-          </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/10 text-muted-foreground">
-            <ClockIcon className="h-5 w-5 mb-1" />
-            <span className="text-sm font-medium">Pendente</span>
-            <span className="text-xl font-bold">{pendenteCount}</span>
-          </div>
-        </CardContent>
-      </Card>
-
+    <div className="space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
         <div className="flex flex-wrap items-center gap-4">
           {hasUpdates && (
@@ -232,19 +121,19 @@ const AgendamentosPanel = () => {
             setIsEditAgendamentoDialogOpen(open);
             if (!open) setEditingAgendamento(null);
           }}
-          onUpdate={handleUpdateLocalAgendamento}
+          onUpdate={handleUpdateAgendamento}
         />
       </div>
 
-      {(isLoadingAgendamentos || (agendamentos && localAgendamentos.length === 0 && agendamentos.length > 0)) ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10 rounded-lg">
+      {isLoadingAgendamentos ? (
+        <div className="flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="ml-2 text-primary">Carregando agendamentos...</p>
         </div>
       ) : agendamentosError ? (
         <p className="text-red-500">Erro ao carregar dados: {agendamentosError.message}</p>
       ) : (
-        <DataTable columns={columns} data={localAgendamentos} getRowClassName={getAgendamentoRowClassName} />
+        <DataTable columns={columns} data={agendamentos || []} getRowClassName={getAgendamentoRowClassName} />
       )}
     </div>
   );
