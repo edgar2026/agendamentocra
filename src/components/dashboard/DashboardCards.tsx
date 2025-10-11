@@ -75,7 +75,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: pendenciasProcesso, isLoading: isLoadingPendencias } = useQuery<number>({
     queryKey: ["dashboardPendenciasProcesso", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query =>
-      query.and("origem_agendamento.eq.MANUAL,or(processo_id.is.null,processo_id.eq.'')")
+      query.and("origem_agendamento.eq.MANUAL,or(processo_id.is.null,processo_id.eq.)")
     ),
     enabled: !!profile && (profile.role === 'ADMIN' || profile.role === 'TRIAGEM'),
   });
