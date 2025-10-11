@@ -10,7 +10,7 @@ interface AttendancePieChartProps {
   viewMode: 'daily' | 'monthly';
 }
 
-const COLORS = ['hsl(var(--success))', 'hsl(var(--destructive))', 'hsl(var(--muted-foreground))']; // Compareceu, Não Compareceu, Pendente
+const COLORS = ['hsl(var(--primary))', 'hsl(330, 80%, 35%)', 'hsl(330, 50%, 85%)']; // Compareceu (Rosa Principal), Não Compareceu (Rosa Escuro), Pendente (Rosa Claro)
 
 export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChartProps) {
   const dateObj = parseISO(selectedDate);
