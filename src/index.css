@@ -13,6 +13,9 @@
     --theme-primary-h: 200;
     --theme-primary-s: 80;
     --theme-primary-l: 35;
+    --theme-primary-foreground-h: 0;
+    --theme-primary-foreground-s: 0;
+    --theme-primary-foreground-l: 100;
     --theme-background-h: 210;
     --theme-background-s: 36;
     --theme-background-l: 97;
@@ -20,6 +23,7 @@
     /* Link Tailwind's core colors to our dynamic theme variables */
     --background: var(--theme-background-h) var(--theme-background-s)% var(--theme-background-l)%;
     --primary: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
+    --primary-foreground: var(--theme-primary-foreground-h) var(--theme-primary-foreground-s)% var(--theme-primary-foreground-l)%;
     --ring: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
 
     /* Static colors that don't change with the theme */
@@ -28,7 +32,6 @@
     --card-foreground: 222.2 47.4% 11.2%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 47.4% 11.2%;
-    --primary-foreground: 0 0% 100%;
     --primary-glow: 200 80% 70%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -61,6 +64,9 @@
     --theme-primary-h: 200;
     --theme-primary-s: 80;
     --theme-primary-l: 45;
+    --theme-primary-foreground-h: 222.2;
+    --theme-primary-foreground-s: 47.4;
+    --theme-primary-foreground-l: 11.2;
     --theme-background-h: 222.2;
     --theme-background-s: 84;
     --theme-background-l: 4.9;
@@ -68,6 +74,7 @@
     /* Link Tailwind's core colors to our dynamic theme variables for dark mode */
     --background: var(--theme-background-h) var(--theme-background-s)% var(--theme-background-l)%;
     --primary: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
+    --primary-foreground: var(--theme-primary-foreground-h) var(--theme-primary-foreground-s)% var(--theme-primary-foreground-l)%;
     --ring: var(--theme-primary-h) var(--theme-primary-s)% var(--theme-primary-l)%;
 
     /* Static dark mode colors */
@@ -76,7 +83,6 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
     --primary-glow: 200 80% 38%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;

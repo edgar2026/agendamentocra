@@ -22,12 +22,16 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [settingsId, setSettingsId] = useState<string | null>(null); // To store the ID of the theme_settings row
 
   const applyThemeToCss = useCallback((theme: Theme) => {
-    document.documentElement.style.setProperty('--theme-primary-h', theme.primary.hue.toString());
-    document.documentElement.style.setProperty('--theme-primary-s', theme.primary.saturation.toString());
-    document.documentElement.style.setProperty('--theme-primary-l', theme.primary.lightness.toString());
-    document.documentElement.style.setProperty('--theme-background-h', theme.background.hue.toString());
-    document.documentElement.style.setProperty('--theme-background-s', theme.background.saturation.toString());
-    document.documentElement.style.setProperty('--theme-background-l', theme.background.lightness.toString());
+    const root = document.documentElement;
+    root.style.setProperty('--theme-primary-h', theme.primary.hue.toString());
+    root.style.setProperty('--theme-primary-s', theme.primary.saturation.toString());
+    root.style.setProperty('--theme-primary-l', theme.primary.lightness.toString());
+    root.style.setProperty('--theme-primary-foreground-h', theme.primaryForeground.hue.toString());
+    root.style.setProperty('--theme-primary-foreground-s', theme.primaryForeground.saturation.toString());
+    root.style.setProperty('--theme-primary-foreground-l', theme.primaryForeground.lightness.toString());
+    root.style.setProperty('--theme-background-h', theme.background.hue.toString());
+    root.style.setProperty('--theme-background-s', theme.background.saturation.toString());
+    root.style.setProperty('--theme-background-l', theme.background.lightness.toString());
   }, []);
 
   const getAutomaticTheme = useCallback(() => {
