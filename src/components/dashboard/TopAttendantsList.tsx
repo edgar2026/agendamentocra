@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttendantPerformance } from "@/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, TrendingDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
 interface TopAttendantsListProps {
@@ -80,6 +80,9 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
     },
   });
 
+  const maxCount = data && data.length > 0 ? data[0].count : 0;
+  const minCount = data && data.length > 0 ? data[data.length - 1].count : 0;
+
   if (isLoading) {
     return (
       <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
@@ -115,10 +118,11 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
       <CardContent className="pt-0">
         {data && data.length > 0 ? (
           <ul className="space-y-1">
-            {data.map((item, index) => (
+            {data.map((item) => (
               <li key={item.atendente} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30">
                 <span className="font-semibold text-foreground flex-grow flex items-center gap-2">
-                  <span className="font-bold w-6 text-center">{index + 1}.</span>
+                  {item.count === maxCount && maxCount > 0 && "🏆"}
+                  {item.count === minCount && minCount < maxCount && data.length > 2 && <TrendingDown className="h-5 w-5 text-destructive" />}
                   {item.atendente}
                 </span>
                 <span className="text-primary font-bold">{item.count} atendimentos</span>
