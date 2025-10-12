@@ -44,7 +44,7 @@ export function ArchiveHistory() {
       <CardHeader>
         <CardTitle>Arquivar Histórico de Agendamentos</CardTitle>
         <CardDescription>
-          Esta ação irá exportar TODOS os registros da tabela de histórico para um arquivo CSV no Storage e, em seguida, limpará a tabela. Esta operação é irreversível.
+          Esta ação irá mover todos os registros da tabela de histórico com **mais de 6 meses** para uma tabela de arquivo de longo prazo. Esta operação é irreversível, mas os dados arquivados ainda poderão ser pesquisados na página "Alunos".
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -52,15 +52,15 @@ export function ArchiveHistory() {
           <AlertDialogTrigger asChild>
             <Button variant="destructive">
               <Archive className="mr-2 h-4 w-4" />
-              Arquivar Histórico Permanentemente
+              Arquivar Registros Antigos
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
               <AlertDialogDescription>
-                Você está prestes a mover todos os dados do histórico para um arquivo e limpar a tabela.
-                Os dados não estarão mais disponíveis para os gráficos do dashboard após esta ação.
+                Você está prestes a mover todos os dados do histórico com mais de 6 meses para a tabela de arquivo.
+                Os dados não estarão mais disponíveis para os gráficos do dashboard, mas continuarão pesquisáveis na tela de Alunos.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -70,7 +70,7 @@ export function ArchiveHistory() {
                 disabled={archiveMutation.isPending}
               >
                 {archiveMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Sim, arquivar e limpar
+                Sim, arquivar registros antigos
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

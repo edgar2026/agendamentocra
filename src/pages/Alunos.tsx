@@ -27,34 +27,14 @@ const AlunosPanel = () => {
         return [];
       }
 
-      const searchTermPattern = `%${submittedSearch}%`;
-
-      const { data: agendamentosData, error: agendamentosError } = await supabase
-        .from("agendamentos")
-        .select("nome_aluno, matricula")
-        .or(`nome_aluno.ilike.${searchTermPattern},matricula.ilike.${searchTermPattern}`);
-
-      if (agendamentosError) throw new Error(`Erro ao buscar em agendamentos: ${agendamentosError.message}`);
-
-      const { data: historicoData, error: historicoError } = await supabase
-        .from("agendamentos_historico")
-        .select("nome_aluno, matricula")
-        .or(`nome_aluno.ilike.${searchTermPattern},matricula.ilike.${searchTermPattern}`);
-
-      if (historicoError) throw new Error(`Erro ao buscar no histórico: ${historicoError.message}`);
-
-      const combinedData = [...(agendamentosData || []), ...(historicoData || [])];
-
-      // Deduplicar alunos
-      const uniqueAlunos = new Map<string, AlunoInfo>();
-      combinedData.forEach(aluno => {
-        const key = `${aluno.nome_aluno}-${aluno.matricula || ''}`;
-        if (!uniqueAlunos.has(key)) {
-          uniqueAlunos.set(key, aluno);
-        }
+      // Usando a nova função RPC para busca unificada
+      const { data, error } = await supabase.rpc('search_aluno_historico_completo', {
+        search_term: submittedSearch
       });
 
-      return Array.from(uniqueAlunos.values());
+      if (error) throw new Error(`Erro na busca unificada: ${error.message}`);
+      
+      return data || [];
     },
     enabled: submittedSearch.length >= 3,
   });
@@ -75,7 +55,7 @@ const AlunosPanel = () => {
         <CardHeader>
           <CardTitle>Pesquisar Aluno</CardTitle>
           <CardDescription>
-            Digite o nome ou a matrícula do aluno para ver seu histórico completo de atendimentos.
+            Digite o nome ou a matrícula do aluno para ver seu histórico completo de atendimentos (incluindo dados arquivados).
           </CardDescription>
         </CardHeader>
         <CardContent>
