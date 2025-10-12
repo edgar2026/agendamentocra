@@ -78,7 +78,7 @@ const DashboardPanel = () => {
         <AttendantGuicheList />
       </div>
 
-      {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
+      {profile?.role === 'ADMIN' && (
         <div>
           <h2 className="text-2xl font-bold tracking-tight mb-2">Monitoramento de Qualidade de Dados</h2>
           <RankingPendenciasAtendentes />
