@@ -69,7 +69,7 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
           tipo_atendimento: tipo,
           count: count,
         }))
-        .sort((a, b) => b.count - a.count);
+        .sort((a, b) => a.count - b.count); // Ordena do menor para o maior para o layout horizontal
 
       return formattedData;
     },
@@ -117,6 +117,7 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
           <ResponsiveContainer width="100%" height={250}>
             <BarChart
               data={data}
+              layout="vertical"
               margin={{
                 top: 5,
                 right: 30,
@@ -125,8 +126,8 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="tipo_atendimento" />
-              <YAxis />
+              <XAxis type="number" allowDecimals={false} />
+              <YAxis type="category" dataKey="tipo_atendimento" width={120} />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="hsl(var(--primary))" name="Quantidade" />
