@@ -6,7 +6,7 @@ import { format, parseISO } from "date-fns";
 
 interface ServiceTypeChartProps {
   selectedDate: string;
-  viewMode: 'daily' | 'monthly' | 'all';
+  viewMode: 'daily' | 'monthly';
 }
 
 export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartProps) {
@@ -20,7 +20,6 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
     queryFn: async () => {
       let queryAgendamentos;
       let queryHistorico;
-      let queryArquivo; // Incluir tabela de arquivo
 
       if (viewMode === 'daily') {
         queryAgendamentos = supabase
@@ -32,13 +31,7 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
           .from("agendamentos_historico")
           .select("tipo_atendimento")
           .eq("data_agendamento", selectedDate);
-
-        queryArquivo = supabase
-          .from("agendamentos_arquivo")
-          .select("tipo_atendimento")
-          .eq("data_agendamento", selectedDate);
-
-      } else if (viewMode === 'monthly') {
+      } else { // monthly
         queryAgendamentos = supabase
           .from("agendamentos")
           .select("tipo_atendimento")
@@ -50,38 +43,17 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
           .select("tipo_atendimento")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
-
-        queryArquivo = supabase
-          .from("agendamentos_arquivo")
-          .select("tipo_atendimento")
-          .gte("data_agendamento", startOfMonth)
-          .lte("data_agendamento", endOfMonth);
-
-      } else { // viewMode === 'all'
-        queryAgendamentos = supabase
-          .from("agendamentos")
-          .select("tipo_atendimento");
-        
-        queryHistorico = supabase
-          .from("agendamentos_historico")
-          .select("tipo_atendimento");
-
-        queryArquivo = supabase
-          .from("agendamentos_arquivo")
-          .select("tipo_atendimento");
       }
 
-      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
         queryAgendamentos.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
-        queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
-        queryArquivo.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", "")
+        queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", "")
       ]);
 
       if (errorAgendamentos) throw new Error(errorAgendamentos.message);
       if (errorHistorico) throw new Error(errorHistorico.message);
-      if (errorArquivo) throw new Error(errorArquivo.message);
 
-      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || []), ...(rawDataArquivo || [])];
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
 
       if (!combinedRawData) return [];
 
@@ -129,7 +101,7 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
     );
   }
 
-  const periodText = viewMode === 'daily' ? `para ${displayDate}` : viewMode === 'monthly' ? `para ${format(dateObj, "MM/yyyy")}` : `em todos os períodos`;
+  const periodText = viewMode === 'daily' ? `para ${displayDate}` : `para ${format(dateObj, "MM/yyyy")}`;
 
   return (
     <Card>

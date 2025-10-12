@@ -8,7 +8,7 @@ import { format, parseISO } from "date-fns";
 
 interface TopAttendantsListProps {
   title: string;
-  viewMode: 'daily' | 'monthly' | 'all';
+  viewMode: 'daily' | 'monthly';
   selectedDate: Date | undefined;
   emptyMessage: string;
 }
@@ -21,7 +21,6 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
     queryFn: async () => {
       let queryAgendamentos;
       let queryHistorico;
-      let queryArquivo; // Incluir tabela de arquivo
       const dateObj = selectedDate ? parseISO(format(selectedDate, "yyyy-MM-dd")) : new Date();
 
       if (viewMode === 'daily') {
@@ -34,13 +33,7 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
           .from("agendamentos_historico")
           .select("atendente")
           .eq("data_agendamento", formattedDate);
-
-        queryArquivo = supabase
-          .from("agendamentos_arquivo")
-          .select("atendente")
-          .eq("data_agendamento", formattedDate);
-
-      } else if (viewMode === 'monthly') { // monthly
+      } else { // monthly
         const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
@@ -55,38 +48,17 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
           .select("atendente")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
-
-        queryArquivo = supabase
-          .from("agendamentos_arquivo")
-          .select("atendente")
-          .gte("data_agendamento", startOfMonth)
-          .lte("data_agendamento", endOfMonth);
-
-      } else { // viewMode === 'all'
-        queryAgendamentos = supabase
-          .from("agendamentos")
-          .select("atendente");
-        
-        queryHistorico = supabase
-          .from("agendamentos_historico")
-          .select("atendente");
-
-        queryArquivo = supabase
-          .from("agendamentos_arquivo")
-          .select("atendente");
       }
 
-      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
         queryAgendamentos.not("atendente", "is", null).not("atendente", "eq", ""),
-        queryHistorico.not("atendente", "is", null).not("atendente", "eq", ""),
-        queryArquivo.not("atendente", "is", null).not("atendente", "eq", "")
+        queryHistorico.not("atendente", "is", null).not("atendente", "eq", "")
       ]);
 
       if (errorAgendamentos) throw new Error(errorAgendamentos.message);
       if (errorHistorico) throw new Error(errorHistorico.message);
-      if (errorArquivo) throw new Error(errorArquivo.message);
 
-      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || []), ...(rawDataArquivo || [])];
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
 
       if (!combinedRawData) return [];
 

@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardCardsProps {
   selectedDate: string;
-  viewMode: 'daily' | 'monthly' | 'all';
+  viewMode: 'daily' | 'monthly';
 }
 
 export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) {
@@ -21,35 +21,30 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
     let query = supabase.from(table).select("*", { count: "exact" });
     if (viewMode === 'daily') {
       query = query.eq("data_agendamento", selectedDate);
-    } else if (viewMode === 'monthly') {
+    } else { // monthly
       query = query.gte("data_agendamento", startOfMonth).lte("data_agendamento", endOfMonth);
     }
-    // Se viewMode for 'all', nenhum filtro de data é aplicado
     return query;
   };
 
   const fetchCombinedCount = async (filter?: (query: any) => any) => {
     let queryAgendamentos = getBaseQuery("agendamentos");
     let queryHistorico = getBaseQuery("agendamentos_historico");
-    let queryArquivo = getBaseQuery("agendamentos_arquivo"); // Incluir tabela de arquivo
 
     if (filter) {
       queryAgendamentos = filter(queryAgendamentos);
       queryHistorico = filter(queryHistorico);
-      queryArquivo = filter(queryArquivo);
     }
 
-    const [{ count: countAgendamentos, error: errorAgendamentos }, { count: countHistorico, error: errorHistorico }, { count: countArquivo, error: errorArquivo }] = await Promise.all([
+    const [{ count: countAgendamentos, error: errorAgendamentos }, { count: countHistorico, error: errorHistorico }] = await Promise.all([
       queryAgendamentos,
-      queryHistorico,
-      queryArquivo
+      queryHistorico
     ]);
 
     if (errorAgendamentos) throw new Error(errorAgendamentos.message);
     if (errorHistorico) throw new Error(errorHistorico.message);
-    if (errorArquivo) throw new Error(errorArquivo.message);
 
-    return (countAgendamentos || 0) + (countHistorico || 0) + (countArquivo || 0);
+    return (countAgendamentos || 0) + (countHistorico || 0);
   };
 
   const { data: totalAgendamentos, isLoading: isLoadingTotal } = useQuery<number>({
@@ -87,7 +82,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
     enabled: !!profile && (profile.role === 'ADMIN' || profile.role === 'TRIAGEM'),
   });
 
-  const periodText = viewMode === 'daily' ? `para ${displayDate}` : viewMode === 'monthly' ? `para ${format(dateObj, "MM/yyyy")}` : `em todos os períodos`;
+  const periodText = viewMode === 'daily' ? `para ${displayDate}` : `para ${format(dateObj, "MM/yyyy")}`;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
