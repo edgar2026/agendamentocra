@@ -78,7 +78,6 @@ export function ExportHistorico() {
         "Compareceu": item.compareceu === true ? "Sim" : item.compareceu === false ? "Não" : "Pendente",
         "Observações": item.observacoes,
         "Status Atendimento": item.status_atendimento,
-        "Unidade": item.unidade_agendamento,
         "Origem": item.origem_agendamento,
       }));
 

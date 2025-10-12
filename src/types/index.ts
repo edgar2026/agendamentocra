@@ -14,7 +14,6 @@ export interface Agendamento {
 
   // Campos da Planilha
   processo_id?: string;
-  unidade_agendamento?: string;
   guiche?: string;
   atendente?: string;
   tipo?: string;

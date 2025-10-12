@@ -13,7 +13,6 @@ const REQUIRED_HEADERS_CANONICAL = [
   '#processo',
   'nome',
   'matrícula',
-  'unidade agendamento',
   'data',
   'horário',
   'tipo de atendimento'
@@ -24,7 +23,6 @@ const headerToDbColumnMap: { [key: string]: keyof Agendamento } = {
   '#processo': 'processo_id',
   'nome': 'nome_aluno',
   'matrícula': 'matricula',
-  'unidade agendamento': 'unidade_agendamento',
   'data': 'data_agendamento',
   'horário': 'horario',
   'tipo de atendimento': 'tipo_atendimento',
