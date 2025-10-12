@@ -14,19 +14,36 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { RankingPendenciasAtendentes } from "@/components/admin/RankingPendenciasAtendentes";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Globe } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 const DashboardPanel = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
+  const [viewMode, setViewMode] = useState<'daily' | 'monthly' | 'all'>('daily');
   const { profile } = useAuth();
 
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
 
-  const handleViewModeChange = (value: 'daily' | 'monthly') => {
+  const handleViewModeChange = (value: 'daily' | 'monthly' | 'all') => {
     if (value) {
       setViewMode(value);
+      if (value === 'all') {
+        setSelectedDate(undefined); // Limpa a data selecionada quando em modo "Todos os Períodos"
+      } else if (!selectedDate) {
+        setSelectedDate(new Date()); // Define a data atual se não houver nenhuma selecionada e não for "all"
+      }
     }
   };
 
@@ -44,11 +61,37 @@ const DashboardPanel = () => {
               <ToggleGroupItem value="monthly" aria-label="Visualização Mensal" variant="outline">
                 Mês
               </ToggleGroupItem>
+              {profile?.role === 'ADMIN' && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <ToggleGroupItem value="all" aria-label="Visualização de Todos os Períodos" variant="outline" className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground">
+                      <Globe className="h-4 w-4 mr-2" /> Todos os Períodos
+                    </ToggleGroupItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Atenção: Consulta Abrangente</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Ao selecionar "Todos os Períodos", o dashboard consultará **todos os dados disponíveis**, incluindo os registros arquivados.
+                        Esta operação pode levar um tempo considerável para carregar, dependendo do volume de dados.
+                        Deseja continuar?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setViewMode('daily')}>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleViewModeChange('all')}>
+                        Continuar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </ToggleGroup>
             <DatePicker
               date={selectedDate}
               setDate={setSelectedDate}
               placeholder={viewMode === 'daily' ? "Selecione a data do Dashboard" : "Selecione o mês do Dashboard"}
+              disabled={viewMode === 'all'} // Desabilita o DatePicker no modo "Todos os Períodos"
             />
           </div>
         </CardHeader>
@@ -64,16 +107,16 @@ const DashboardPanel = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <TopAttendantsList
-          title={`Ranking de Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
+          title={`Ranking de Atendentes ${viewMode === 'daily' ? 'do Dia' : viewMode === 'monthly' ? 'do Mês' : 'Geral'}`}
           viewMode={viewMode}
           selectedDate={selectedDate}
-          emptyMessage={`Nenhum atendente registrou atendimentos ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
+          emptyMessage={`Nenhum atendente registrou atendimentos ${viewMode === 'daily' ? 'neste dia' : viewMode === 'monthly' ? 'neste mês' : 'em todos os períodos'}.`}
         />
         <ServiceTypeRankingList
-          title={`Ranking de Atendimentos por Tipo ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
+          title={`Ranking de Atendimentos por Tipo ${viewMode === 'daily' ? 'do Dia' : viewMode === 'monthly' ? 'do Mês' : 'Geral'}`}
           viewMode={viewMode}
           selectedDate={selectedDate}
-          emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
+          emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : viewMode === 'monthly' ? 'neste mês' : 'em todos os períodos'}.`}
         />
         <AttendantGuicheList />
       </div>

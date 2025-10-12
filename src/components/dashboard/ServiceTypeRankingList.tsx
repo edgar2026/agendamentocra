@@ -7,7 +7,7 @@ import { format, parseISO } from "date-fns";
 
 interface ServiceTypeRankingListProps {
   title: string;
-  viewMode: 'daily' | 'monthly';
+  viewMode: 'daily' | 'monthly' | 'all';
   selectedDate: Date | undefined;
   emptyMessage: string;
 }
@@ -20,6 +20,7 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
     queryFn: async () => {
       let queryAgendamentos;
       let queryHistorico;
+      let queryArquivo; // Incluir tabela de arquivo
       const dateObj = selectedDate ? parseISO(format(selectedDate, "yyyy-MM-dd")) : new Date();
 
       if (viewMode === 'daily') {
@@ -32,7 +33,13 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
           .from("agendamentos_historico")
           .select("tipo_atendimento")
           .eq("data_agendamento", formattedDate);
-      } else { // monthly
+
+        queryArquivo = supabase
+          .from("agendamentos_arquivo")
+          .select("tipo_atendimento")
+          .eq("data_agendamento", formattedDate);
+
+      } else if (viewMode === 'monthly') { // monthly
         const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
 
@@ -47,17 +54,38 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
           .select("tipo_atendimento")
           .gte("data_agendamento", startOfMonth)
           .lte("data_agendamento", endOfMonth);
+
+        queryArquivo = supabase
+          .from("agendamentos_arquivo")
+          .select("tipo_atendimento")
+          .gte("data_agendamento", startOfMonth)
+          .lte("data_agendamento", endOfMonth);
+
+      } else { // viewMode === 'all'
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("tipo_atendimento");
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
+          .select("tipo_atendimento");
+
+        queryArquivo = supabase
+          .from("agendamentos_arquivo")
+          .select("tipo_atendimento");
       }
 
-      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         queryAgendamentos.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
-        queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", "")
+        queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
+        queryArquivo.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", "")
       ]);
 
       if (errorAgendamentos) throw new Error(errorAgendamentos.message);
       if (errorHistorico) throw new Error(errorHistorico.message);
+      if (errorArquivo) throw new Error(errorArquivo.message);
 
-      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || []), ...(rawDataArquivo || [])];
 
       if (!combinedRawData) return [];
 

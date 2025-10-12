@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 
 interface AttendancePieChartProps {
   selectedDate: string;
-  viewMode: 'daily' | 'monthly';
+  viewMode: 'daily' | 'monthly' | 'all';
 }
 
 const COLORS = ['hsl(var(--primary))', 'hsl(330, 80%, 35%)', 'hsl(330, 50%, 85%)']; // Compareceu (Rosa Principal), Não Compareceu (Rosa Escuro), Pendente (Rosa Claro)
@@ -20,26 +20,32 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
     queryFn: async () => {
       let baseQueryAgendamentos = supabase.from("agendamentos").select("compareceu");
       let baseQueryHistorico = supabase.from("agendamentos_historico").select("compareceu");
+      let baseQueryArquivo = supabase.from("agendamentos_arquivo").select("compareceu"); // Incluir tabela de arquivo
 
       if (viewMode === 'daily') {
         baseQueryAgendamentos = baseQueryAgendamentos.eq("data_agendamento", selectedDate);
         baseQueryHistorico = baseQueryHistorico.eq("data_agendamento", selectedDate);
-      } else { // monthly
+        baseQueryArquivo = baseQueryArquivo.eq("data_agendamento", selectedDate);
+      } else if (viewMode === 'monthly') { // monthly
         const monthStart = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
         const monthEnd = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
         baseQueryAgendamentos = baseQueryAgendamentos.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
         baseQueryHistorico = baseQueryHistorico.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
+        baseQueryArquivo = baseQueryArquivo.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
       }
+      // Se viewMode for 'all', nenhum filtro de data é aplicado
 
-      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         baseQueryAgendamentos,
-        baseQueryHistorico
+        baseQueryHistorico,
+        baseQueryArquivo
       ]);
 
       if (errorAgendamentos) throw new Error(errorAgendamentos.message);
       if (errorHistorico) throw new Error(errorHistorico.message);
+      if (errorArquivo) throw new Error(errorArquivo.message);
 
-      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || []), ...(rawDataArquivo || [])];
 
       const compareceuCount = combinedRawData.filter(item => item.compareceu === true).length;
       const naoCompareceuCount = combinedRawData.filter(item => item.compareceu === false).length;
@@ -92,7 +98,7 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
     );
   }
 
-  const periodText = viewMode === 'daily' ? `para ${format(dateObj, "dd/MM/yyyy")}` : `para ${format(dateObj, "MM/yyyy")}`;
+  const periodText = viewMode === 'daily' ? `para ${format(dateObj, "dd/MM/yyyy")}` : viewMode === 'monthly' ? `para ${format(dateObj, "MM/yyyy")}` : `em todos os períodos`;
 
   return (
     <Card>

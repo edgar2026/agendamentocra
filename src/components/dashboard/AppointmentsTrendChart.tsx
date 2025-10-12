@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 
 interface AppointmentsTrendChartProps {
   selectedDate: string;
-  viewMode: 'daily' | 'monthly';
+  viewMode: 'daily' | 'monthly' | 'all';
 }
 
 export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsTrendChartProps) {
@@ -19,6 +19,7 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
     queryFn: async () => {
       let queryAgendamentos;
       let queryHistorico;
+      let queryArquivo; // Incluir tabela de arquivo
 
       if (viewMode === 'daily') {
         queryAgendamentos = supabase
@@ -34,7 +35,15 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
           .eq("data_agendamento", selectedDate)
           .not("horario", "is", null)
           .not("horario", "eq", "");
-      } else { // monthly
+        
+        queryArquivo = supabase // Para o modo diário, o arquivo não é relevante para horário
+          .from("agendamentos_arquivo")
+          .select("horario")
+          .eq("data_agendamento", selectedDate)
+          .not("horario", "is", null)
+          .not("horario", "eq", "");
+
+      } else if (viewMode === 'monthly') {
         const monthStart = format(startOfMonth(dateObj), "yyyy-MM-dd");
         const monthEnd = format(endOfMonth(dateObj), "yyyy-MM-dd");
         
@@ -49,17 +58,39 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
           .select("data_agendamento")
           .gte("data_agendamento", monthStart)
           .lte("data_agendamento", monthEnd);
+
+        queryArquivo = supabase
+          .from("agendamentos_arquivo")
+          .select("data_agendamento")
+          .gte("data_agendamento", monthStart)
+          .lte("data_agendamento", monthEnd);
+
+      } else { // viewMode === 'all'
+        // Para "Todos os Períodos", vamos mostrar uma tendência mensal de todos os dados
+        queryAgendamentos = supabase
+          .from("agendamentos")
+          .select("data_agendamento");
+        
+        queryHistorico = supabase
+          .from("agendamentos_historico")
+          .select("data_agendamento");
+
+        queryArquivo = supabase
+          .from("agendamentos_arquivo")
+          .select("data_agendamento");
       }
 
-      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }] = await Promise.all([
+      const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         queryAgendamentos,
-        queryHistorico
+        queryHistorico,
+        queryArquivo
       ]);
 
       if (errorAgendamentos) throw new Error(errorAgendamentos.message);
       if (errorHistorico) throw new Error(errorHistorico.message);
+      if (errorArquivo) throw new Error(errorArquivo.message);
 
-      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || [])];
+      const combinedRawData = [...(rawDataAgendamentos || []), ...(rawDataHistorico || []), ...(rawDataArquivo || [])];
 
       if (viewMode === 'daily') {
         const hourlyCounts = combinedRawData.reduce((acc, { horario }) => {
@@ -76,23 +107,48 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
           return { label: `${hour}:00`, count: hourlyCounts[hour] || 0 };
         });
         return formattedData;
-      } else { // monthly
-        const dailyCounts = combinedRawData.reduce((acc, { data_agendamento }) => {
-          if (data_agendamento) {
-            acc[data_agendamento] = (acc[data_agendamento] || 0) + 1;
+      } else { // monthly or all
+        const dailyOrMonthlyCounts = combinedRawData.reduce((acc, item) => {
+          const dateKey = item.data_agendamento; // Use data_agendamento para ambos os modos
+          if (dateKey) {
+            const monthKey = format(parseISO(dateKey), "yyyy-MM"); // Agrupa por mês para "all"
+            const dayKey = format(parseISO(dateKey), "yyyy-MM-dd"); // Agrupa por dia para "monthly"
+            
+            if (viewMode === 'monthly') {
+              acc[dayKey] = (acc[dayKey] || 0) + 1;
+            } else { // viewMode === 'all'
+              acc[monthKey] = (acc[monthKey] || 0) + 1;
+            }
           }
           return acc;
         }, {} as Record<string, number>);
 
-        const daysInMonth = eachDayOfInterval({ start: startOfMonth(dateObj), end: endOfMonth(dateObj) });
-        const formattedData = daysInMonth.map(day => {
-          const dayString = format(day, "yyyy-MM-dd");
-          return {
-            label: format(day, "dd/MM", { locale: ptBR }),
-            count: dailyCounts[dayString] || 0,
-          };
-        });
-        return formattedData;
+        if (viewMode === 'monthly') {
+          const daysInMonth = eachDayOfInterval({ start: startOfMonth(dateObj), end: endOfMonth(dateObj) });
+          const formattedData = daysInMonth.map(day => {
+            const dayString = format(day, "yyyy-MM-dd");
+            return {
+              label: format(day, "dd/MM", { locale: ptBR }),
+              count: dailyOrMonthlyCounts[dayString] || 0,
+            };
+          });
+          return formattedData;
+        } else { // viewMode === 'all'
+          // Gerar labels para todos os meses presentes nos dados
+          const uniqueMonths = Array.from(new Set(
+            combinedRawData
+              .filter(item => item.data_agendamento)
+              .map(item => format(parseISO(item.data_agendamento), "yyyy-MM"))
+          )).sort();
+
+          const formattedData = uniqueMonths.map(monthKey => {
+            return {
+              label: format(parseISO(`${monthKey}-01`), "MM/yyyy", { locale: ptBR }),
+              count: dailyOrMonthlyCounts[monthKey] || 0,
+            };
+          });
+          return formattedData;
+        }
       }
     },
   });
@@ -124,8 +180,8 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
     );
   }
 
-  const periodText = viewMode === 'daily' ? `para ${format(dateObj, "dd/MM/yyyy", { locale: ptBR })}` : `para ${format(dateObj, "MM/yyyy", { locale: ptBR })}`;
-  const chartTitle = viewMode === 'daily' ? "Agendamentos por Hora" : "Agendamentos por Dia";
+  const periodText = viewMode === 'daily' ? `para ${format(dateObj, "dd/MM/yyyy", { locale: ptBR })}` : viewMode === 'monthly' ? `para ${format(dateObj, "MM/yyyy", { locale: ptBR })}` : `em todos os períodos`;
+  const chartTitle = viewMode === 'daily' ? "Agendamentos por Hora" : viewMode === 'monthly' ? "Agendamentos por Dia" : "Agendamentos por Mês (Geral)";
 
   return (
     <Card>
