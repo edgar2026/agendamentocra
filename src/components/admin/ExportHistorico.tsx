@@ -26,32 +26,46 @@ export function ExportHistorico() {
     }
 
     setIsLoading(true);
-    const toastId = toast.loading("Buscando dados para exportação...");
+    const toastId = toast.loading("Buscando dados para exportação em todo o histórico...");
 
     try {
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
-      const { data, error } = await supabase
-        .from("agendamentos_historico")
-        .select("*")
-        .gte("data_agendamento", formattedStartDate)
-        .lte("data_agendamento", formattedEndDate)
-        .order("data_agendamento", { ascending: true });
+      // Consulta ambas as tabelas em paralelo
+      const [
+        { data: historicoData, error: historicoError },
+        { data: arquivoData, error: arquivoError }
+      ] = await Promise.all([
+        supabase
+          .from("agendamentos_historico")
+          .select("*")
+          .gte("data_agendamento", formattedStartDate)
+          .lte("data_agendamento", formattedEndDate),
+        supabase
+          .from("agendamentos_arquivo")
+          .select("*")
+          .gte("data_agendamento", formattedStartDate)
+          .lte("data_agendamento", formattedEndDate)
+      ]);
 
-      if (error) {
-        throw new Error(error.message);
-      }
+      if (historicoError) throw new Error(`Erro ao buscar no histórico: ${historicoError.message}`);
+      if (arquivoError) throw new Error(`Erro ao buscar no arquivo: ${arquivoError.message}`);
 
-      if (!data || data.length === 0) {
-        toast.info("Nenhum agendamento encontrado no período selecionado.", { id: toastId });
+      const combinedData = [...(historicoData || []), ...(arquivoData || [])];
+      
+      // Ordena os dados combinados pela data
+      combinedData.sort((a, b) => new Date(a.data_agendamento).getTime() - new Date(b.data_agendamento).getTime());
+
+      if (combinedData.length === 0) {
+        toast.info("Nenhum agendamento encontrado no período selecionado em todo o histórico.", { id: toastId });
         return;
       }
 
-      toast.success(`Encontrados ${data.length} registros. Gerando planilha...`, { id: toastId });
+      toast.success(`Encontrados ${combinedData.length} registros. Gerando planilha...`, { id: toastId });
 
       // Mapeia os dados para colunas mais amigáveis
-      const mappedData = data.map(item => ({
+      const mappedData = combinedData.map(item => ({
         "Processo": item.processo_id,
         "Nome do Aluno": item.nome_aluno,
         "Matrícula": item.matricula,
@@ -65,13 +79,14 @@ export function ExportHistorico() {
         "Observações": item.observacoes,
         "Status Atendimento": item.status_atendimento,
         "Unidade": item.unidade_agendamento,
+        "Origem": item.origem_agendamento,
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(mappedData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Histórico de Agendamentos");
 
-      const fileName = `Historico_Agendamentos_${formattedStartDate}_a_${formattedEndDate}.xlsx`;
+      const fileName = `Historico_Completo_${formattedStartDate}_a_${formattedEndDate}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
       toast.success("Download da planilha iniciado!", { id: toastId });
@@ -86,9 +101,9 @@ export function ExportHistorico() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Exportar Histórico de Agendamentos</CardTitle>
+        <CardTitle>Exportar Histórico Completo</CardTitle>
         <CardDescription>
-          Selecione um período para baixar um relatório completo em formato de planilha (Excel).
+          Selecione um período para baixar um relatório completo em formato de planilha (Excel), incluindo dados recentes e arquivados.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row items-center gap-4">
