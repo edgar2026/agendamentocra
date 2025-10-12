@@ -36,13 +36,13 @@ function App() {
         <Route element={session ? <Layout /> : <Navigate to="/login" />}>
           <Route path="/" element={<Home />} />
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM', 'SUPER_ADMIN']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/filtrar-historico" element={<FiltrarHistorico />} />
             <Route path="/alunos" element={<Alunos />} />
           </Route>
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'SUPER_ADMIN']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
             <Route path="/admin" element={<Admin />} />
           </Route>
         </Route>

@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { format, parseISO } from "date-fns";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 interface ServiceTypeChartProps {
   selectedDate: string;
@@ -15,13 +14,10 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
   const dateObj = parseISO(selectedDate);
   const startOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth(), 1), "yyyy-MM-dd");
   const endOfMonth = format(new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0), "yyyy-MM-dd");
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data, isLoading, error } = useQuery<Array<{ tipo_atendimento: string; count: number }>>({
-    queryKey: ["serviceTypeData", selectedDate, viewMode, profile?.unidade_id], // Adiciona unidade_id à chave
+    queryKey: ["serviceTypeData", selectedDate, viewMode],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
       let queryAgendamentos;
       let queryHistorico;
       let queryArquivo; // Incluir tabela de arquivo
@@ -75,13 +71,6 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
           .select("tipo_atendimento");
       }
 
-      // Adiciona filtro de unidade, a menos que seja SUPER_ADMIN
-      if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
-        queryAgendamentos = queryAgendamentos.eq('unidade_id', profile.unidade_id);
-        queryHistorico = queryHistorico.eq('unidade_id', profile.unidade_id);
-        queryArquivo = queryArquivo.eq('unidade_id', profile.unidade_id);
-      }
-
       const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         queryAgendamentos.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
         queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
@@ -112,7 +101,6 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
 
       return formattedData;
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   if (isLoading) {

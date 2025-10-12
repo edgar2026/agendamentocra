@@ -8,13 +8,11 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 export function ExportHistorico() {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [isLoading, setIsLoading] = useState(false);
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const handleDownload = async () => {
     if (!startDate || !endDate) {
@@ -27,11 +25,6 @@ export function ExportHistorico() {
       return;
     }
 
-    if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') {
-      toast.error("Você precisa ter uma unidade atribuída para exportar o histórico.");
-      return;
-    }
-
     setIsLoading(true);
     const toastId = toast.loading("Buscando dados para exportação em todo o histórico...");
 
@@ -39,28 +32,21 @@ export function ExportHistorico() {
       const formattedStartDate = format(startDate, "yyyy-MM-dd");
       const formattedEndDate = format(endDate, "yyyy-MM-dd");
 
-      const applyUnitFilter = (query: any) => {
-        if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
-          return query.eq('unidade_id', profile.unidade_id);
-        }
-        return query; // SUPER_ADMIN não tem filtro de unidade
-      };
-
       // Consulta ambas as tabelas em paralelo
       const [
         { data: historicoData, error: historicoError },
         { data: arquivoData, error: arquivoError }
       ] = await Promise.all([
-        applyUnitFilter(supabase
+        supabase
           .from("agendamentos_historico")
           .select("*")
           .gte("data_agendamento", formattedStartDate)
-          .lte("data_agendamento", formattedEndDate)),
-        applyUnitFilter(supabase
+          .lte("data_agendamento", formattedEndDate),
+        supabase
           .from("agendamentos_arquivo")
           .select("*")
           .gte("data_agendamento", formattedStartDate)
-          .lte("data_agendamento", formattedEndDate))
+          .lte("data_agendamento", formattedEndDate)
       ]);
 
       if (historicoError) throw new Error(`Erro ao buscar no histórico: ${historicoError.message}`);
@@ -126,7 +112,7 @@ export function ExportHistorico() {
           <span>até</span>
           <DatePicker date={endDate} setDate={setEndDate} placeholder="Data de Fim" />
         </div>
-        <Button onClick={handleDownload} disabled={isLoading || (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN')}>
+        <Button onClick={handleDownload} disabled={isLoading}>
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

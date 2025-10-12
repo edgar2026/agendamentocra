@@ -25,17 +25,10 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       query = query.gte("data_agendamento", startOfMonth).lte("data_agendamento", endOfMonth);
     }
     // Se viewMode for 'all', nenhum filtro de data é aplicado
-
-    // Adiciona filtro de unidade, a menos que seja SUPER_ADMIN
-    if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
-      query = query.eq('unidade_id', profile.unidade_id);
-    }
     return query;
   };
 
   const fetchCombinedCount = async (filter?: (query: any) => any) => {
-    if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return 0; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
     let queryAgendamentos = getBaseQuery("agendamentos");
     let queryHistorico = getBaseQuery("agendamentos_historico");
     let queryArquivo = getBaseQuery("agendamentos_arquivo"); // Incluir tabela de arquivo
@@ -60,43 +53,38 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   };
 
   const { data: totalAgendamentos, isLoading: isLoadingTotal } = useQuery<number>({
-    queryKey: ["dashboardTotalAgendamentos", selectedDate, viewMode, profile?.unidade_id],
+    queryKey: ["dashboardTotalAgendamentos", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(),
-    enabled: !!profile,
   });
 
   const { data: comparecimentos, isLoading: isLoadingComparecimentos } = useQuery<number>({
-    queryKey: ["dashboardComparecimentos", selectedDate, viewMode, profile?.unidade_id],
+    queryKey: ["dashboardComparecimentos", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query => query.eq("compareceu", true)),
-    enabled: !!profile,
   });
 
   const { data: faltas, isLoading: isLoadingFaltas } = useQuery<number>({
-    queryKey: ["dashboardFaltas", selectedDate, viewMode, profile?.unidade_id],
+    queryKey: ["dashboardFaltas", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query => query.eq("compareceu", false)),
-    enabled: !!profile,
   });
 
   const { data: agendadosCount, isLoading: isLoadingAgendados } = useQuery<number>({
-    queryKey: ["dashboardAgendadosCount", selectedDate, viewMode, profile?.unidade_id],
+    queryKey: ["dashboardAgendadosCount", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "PLANILHA")),
-    enabled: !!profile,
   });
 
   const { data: expontaneosCount, isLoading: isLoadingExpontaneos } = useQuery<number>({
-    queryKey: ["dashboardExpontaneosCount", selectedDate, viewMode, profile?.unidade_id],
+    queryKey: ["dashboardExpontaneosCount", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "MANUAL")),
-    enabled: !!profile,
   });
 
   const { data: pendenciasProcesso, isLoading: isLoadingPendencias } = useQuery<number>({
-    queryKey: ["dashboardPendenciasProcesso", selectedDate, viewMode, profile?.unidade_id],
+    queryKey: ["dashboardPendenciasProcesso", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query =>
       query
         .eq('origem_agendamento', 'MANUAL')
         .or('processo_id.is.null,processo_id.eq.')
     ),
-    enabled: !!profile && (profile.role === 'ADMIN' || profile.role === 'TRIAGEM' || profile.role === 'SUPER_ADMIN'),
+    enabled: !!profile && (profile.role === 'ADMIN' || profile.role === 'TRIAGEM'),
   });
 
   const periodText = viewMode === 'daily' ? `para ${displayDate}` : viewMode === 'monthly' ? `para ${format(dateObj, "MM/yyyy")}` : `em todos os períodos`;
@@ -178,7 +166,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
         </CardContent>
       </Card>
 
-      {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM' || profile?.role === 'SUPER_ADMIN') && (
+      {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
         <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-0">
             <CardTitle className="text-lg font-medium">Atendimento Expontâneo sem Número do Chamado</CardTitle>

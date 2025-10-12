@@ -6,11 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Clock } from "@/components/layout/Clock";
 
 const navItems = [
-  { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'SUPER_ADMIN'] },
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'SUPER_ADMIN'] },
-  { href: "/alunos", label: "Pesquisar Aluno", icon: Users, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'SUPER_ADMIN'] },
-  { href: "/filtrar-historico", label: "Histórico de espontâneo sem nº do chamado", icon: Filter, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM', 'SUPER_ADMIN'] },
-  { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN', 'SUPER_ADMIN'] },
+  { href: "/", label: "Atendimentos", icon: Home, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/alunos", label: "Pesquisar Aluno", icon: Users, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/filtrar-historico", label: "Histórico de espontâneo sem nº do chamado", icon: Filter, roles: ['ADMIN', 'ATENDENTE', 'TRIAGEM'] },
+  { href: "/admin", label: "Administração", icon: Settings, roles: ['ADMIN'] },
 ];
 
 interface HeaderProps {
@@ -20,10 +20,6 @@ interface HeaderProps {
 export function Header({ title }: HeaderProps) {
   const location = useLocation();
   const { profile } = useAuth();
-
-  // Adicionando log para depuração
-  console.log("Header: Perfil do usuário:", profile);
-  console.log("Header: Papel do usuário:", profile?.role);
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shadow-sm">

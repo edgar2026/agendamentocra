@@ -32,11 +32,6 @@ export function RoleGuard({ allowedRoles }: RoleGuardProps) {
     return <Outlet />; 
   }
 
-  // SUPER_ADMIN tem acesso a tudo
-  if (profile.role === 'SUPER_ADMIN') {
-    return <Outlet />;
-  }
-
   if (!allowedRoles.includes(profile.role)) {
     // Se o usuário tem um perfil, mas não tem a função permitida, redireciona para a página inicial
     return <Navigate to="/" replace />;

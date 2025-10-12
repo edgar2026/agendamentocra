@@ -5,7 +5,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 interface AppointmentsTrendChartProps {
   selectedDate: string;
@@ -14,13 +13,10 @@ interface AppointmentsTrendChartProps {
 
 export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsTrendChartProps) {
   const dateObj = parseISO(selectedDate);
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data, isLoading, error } = useQuery<Array<{ label: string; count: number }>>({
-    queryKey: ["appointmentsTrendData", selectedDate, viewMode, profile?.unidade_id], // Adiciona unidade_id à chave
+    queryKey: ["appointmentsTrendData", selectedDate, viewMode],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
       let queryAgendamentos;
       let queryHistorico;
       let queryArquivo; // Incluir tabela de arquivo
@@ -82,13 +78,6 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
         queryArquivo = supabase
           .from("agendamentos_arquivo")
           .select("data_agendamento");
-      }
-
-      // Adiciona filtro de unidade, a menos que seja SUPER_ADMIN
-      if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
-        queryAgendamentos = queryAgendamentos.eq('unidade_id', profile.unidade_id);
-        queryHistorico = queryHistorico.eq('unidade_id', profile.unidade_id);
-        queryArquivo = queryArquivo.eq('unidade_id', profile.unidade_id);
       }
 
       const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
@@ -162,7 +151,6 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
         }
       }
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   if (isLoading) {

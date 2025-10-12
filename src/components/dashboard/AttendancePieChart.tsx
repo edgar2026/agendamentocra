@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from "recharts";
 import { format, parseISO } from "date-fns";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 interface AttendancePieChartProps {
   selectedDate: string;
@@ -15,13 +14,10 @@ const COLORS = ['hsl(var(--primary))', 'hsl(330, 80%, 35%)', 'hsl(330, 50%, 85%)
 
 export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChartProps) {
   const dateObj = parseISO(selectedDate);
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data, isLoading, error } = useQuery<Array<{ name: string; value: number; percentage: string }>>({
-    queryKey: ["attendancePieChartData", selectedDate, viewMode, profile?.unidade_id], // Adiciona unidade_id à chave
+    queryKey: ["attendancePieChartData", selectedDate, viewMode],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
       let baseQueryAgendamentos = supabase.from("agendamentos").select("compareceu");
       let baseQueryHistorico = supabase.from("agendamentos_historico").select("compareceu");
       let baseQueryArquivo = supabase.from("agendamentos_arquivo").select("compareceu"); // Incluir tabela de arquivo
@@ -38,13 +34,6 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
         baseQueryArquivo = baseQueryArquivo.gte("data_agendamento", monthStart).lte("data_agendamento", monthEnd);
       }
       // Se viewMode for 'all', nenhum filtro de data é aplicado
-
-      // Adiciona filtro de unidade, a menos que seja SUPER_ADMIN
-      if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
-        baseQueryAgendamentos = baseQueryAgendamentos.eq('unidade_id', profile.unidade_id);
-        baseQueryHistorico = baseQueryHistorico.eq('unidade_id', profile.unidade_id);
-        baseQueryArquivo = baseQueryArquivo.eq('unidade_id', profile.unidade_id);
-      }
 
       const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         baseQueryAgendamentos,
@@ -80,7 +69,6 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
 
       return formattedData;
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   if (isLoading) {

@@ -49,7 +49,7 @@ interface AddAgendamentoDialogProps {
 }
 
 export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialogProps) {
-  const { user, profile } = useAuth(); // Obter o perfil do usuário
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -128,6 +128,7 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
+      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
       queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
     },
     onError: (error) => {
@@ -136,8 +137,8 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
   });
 
   const onSubmit = (data: AgendamentoFormData) => {
-    if (!user || !profile?.unidade_id) { // Verifica se o usuário e a unidade_id estão presentes
-      toast.error("Você precisa estar logado e ter uma unidade atribuída para criar um agendamento.");
+    if (!user) {
+      toast.error("Você precisa estar logado para criar um agendamento.");
       return;
     }
 
@@ -158,7 +159,6 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
       origem_agendamento: "MANUAL", // Define a origem como 'MANUAL'
       atendente: selectedAttendantName, // Salvar o NOME do atendente
       tipo_atendimento: data.tipo_atendimento ? data.tipo_atendimento.toUpperCase() : undefined, // Garante que o tipo de atendimento seja maiúsculo
-      unidade_id: profile.unidade_id, // Atribui a unidade_id do perfil do usuário
     };
 
     addAgendamentoMutation.mutate(finalData);

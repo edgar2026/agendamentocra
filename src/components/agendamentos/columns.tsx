@@ -1,8 +1,8 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { Agendamento, AgendamentoStatus, Profile } from "@/types" // Removido Atendente
-import { MoreVertical, ArrowUpDown, Check, X, Trash2, RotateCcw, Edit } from "lucide-react"
+import { Agendamento, AgendamentoStatus, Atendente, Profile } from "@/types"
+import { MoreVertical, ArrowUpDown, Check, X, Trash2, RotateCcw, Edit } from "lucide-react" // Megaphone removido
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -54,7 +54,8 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
       toast.success("Status do agendamento atualizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardFaltas", today, 'daily'] });
-      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] });
+      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
     },
     onError: (err) => {
       toast.error(`Erro ao salvar: ${err.message}`);
@@ -104,6 +105,8 @@ const StatusActions = ({ agendamento, onUpdate }: { agendamento: Agendamento, on
 };
 
 export const getColumns = (
+  atendentes: Atendente[] | undefined,
+  isLoadingAtendentes: boolean,
   onUpdate: (ag: Agendamento) => void,
   onEdit: (ag: Agendamento) => void,
   profile: Profile | null
@@ -142,6 +145,8 @@ export const getColumns = (
     cell: ({ row }) => (
       <AtendenteSelectCell
         agendamento={row.original}
+        atendentes={atendentes}
+        isLoading={isLoadingAtendentes}
         onUpdate={onUpdate}
       />
     ),
@@ -163,6 +168,24 @@ export const getColumns = (
       const queryClient = useQueryClient();
       const today = format(new Date(), "yyyy-MM-dd");
 
+      // const canManage = profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM'; // Não é mais necessário para chamar no painel
+
+      // const callToPanelMutation = useMutation({ // Removido
+      //   mutationFn: async (ag: Agendamento) => {
+      //     const { error } = await supabase.from("chamadas_painel").insert({
+      //       nome_aluno: ag.nome_aluno,
+      //       guiche: ag.guiche || ag.atendente,
+      //     });
+      //     if (error) throw new Error(error.message);
+      //   },
+      //   onSuccess: () => {
+      //     toast.success(`${agendamento.nome_aluno} foi chamado(a) no painel!`);
+      //   },
+      //   onError: (error) => {
+      //     toast.error(`Erro ao chamar no painel: ${error.message}`);
+      //   },
+      // });
+
       const deleteAgendamentoMutation = useMutation({
         mutationFn: async (id: string) => {
           const { error } = await supabase.from("agendamentos").delete().eq("id", id);
@@ -172,7 +195,8 @@ export const getColumns = (
           toast.success("Agendamento excluído com sucesso!");
           queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
           queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
-          queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] });
+          // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
+          queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
         },
         onError: (error) => {
           toast.error(`Erro ao excluir agendamento: ${error.message}`);
@@ -190,11 +214,17 @@ export const getColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {/* {canManage && ( // Removido
+                <DropdownMenuItem onClick={() => callToPanelMutation.mutate(agendamento)}>
+                  <Megaphone className="mr-2 h-4 w-4 text-primary" />
+                  Chamar no Painel
+                </DropdownMenuItem>
+              )} */}
               <DropdownMenuItem onClick={() => onEdit(agendamento)}>
                 <Edit className="mr-2 h-4 w-4" />
                 Editar Agendamento
               </DropdownMenuItem>
-              {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM' || profile?.role === 'SUPER_ADMIN') && ( // SUPER_ADMIN também pode excluir
+              {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && ( // Mantido o controle de acesso para exclusão
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

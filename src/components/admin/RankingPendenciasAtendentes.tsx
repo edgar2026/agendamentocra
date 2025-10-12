@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Trophy, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 interface RankedAttendant {
   atendente: string;
@@ -10,25 +9,15 @@ interface RankedAttendant {
 }
 
 export function RankingPendenciasAtendentes() {
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
-
   const { data: rankedAttendants, isLoading, error } = useQuery<RankedAttendant[]>({
-    queryKey: ["rankingPendenciasAtendentes", profile?.unidade_id], // Adiciona unidade_id à chave
+    queryKey: ["rankingPendenciasAtendentes"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
       // Busca todos os atendimentos manuais no histórico que não têm processo_id
-      let query = supabase
+      const { data, error } = await supabase
         .from("agendamentos_historico")
         .select("atendente")
         .eq("origem_agendamento", "MANUAL")
         .or("processo_id.is.null,processo_id.eq.");
-      
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw new Error(error.message);
       if (!data) return [];
@@ -54,7 +43,6 @@ export function RankingPendenciasAtendentes() {
 
       return ranked;
     },
-    enabled: !!profile && (profile.role === 'ADMIN' || profile.role === 'TRIAGEM' || profile.role === 'SUPER_ADMIN'), // Habilita a query apenas se o perfil estiver carregado e for ADMIN/TRIAGEM/SUPER_ADMIN
   });
 
   const maxCount = rankedAttendants && rankedAttendants.length > 0 ? rankedAttendants[0].count : 0;

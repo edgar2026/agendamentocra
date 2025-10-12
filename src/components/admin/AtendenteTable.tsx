@@ -16,28 +16,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AtendenteForm } from "./AtendenteForm";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 export function AtendenteTable() {
   const queryClient = useQueryClient();
   const [editingAtendente, setEditingAtendente] = useState<Atendente | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data: atendentes, isLoading, error } = useQuery<Atendente[]>({
-    queryKey: ["atendentes", profile?.unidade_id], // Adiciona unidade_id como parte da chave da query
+    queryKey: ["atendentes"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
-      let query = supabase.from("atendentes").select("*").order("name", { ascending: true });
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-      const { data, error } = await query;
+      const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   const deleteAtendenteMutation = useMutation({
@@ -121,7 +112,6 @@ export function AtendenteTable() {
             setEditingAtendente(null);
             setIsFormOpen(true);
           }}
-          disabled={!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN'} // Desabilita se não tiver unidade e não for SUPER_ADMIN
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           Adicionar Atendente

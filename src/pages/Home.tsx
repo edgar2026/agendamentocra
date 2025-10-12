@@ -37,27 +37,19 @@ const AgendamentosPanel = () => {
   const [localAgendamentos, setLocalAgendamentos] = useState<Agendamento[]>([]);
   const [hasUpdates, setHasUpdates] = useState(false);
 
-  // Query para buscar agendamentos da unidade do usuário
+  // Query para buscar TODOS os agendamentos
   const { data: agendamentos, isLoading: isLoadingAgendamentos, error: agendamentosError, refetch } = useQuery<Agendamento[]>({
-    queryKey: ["agendamentos", profile?.unidade_id], // Adiciona unidade_id como parte da chave da query
+    queryKey: ["agendamentos"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
-      let query = supabase
+      const { data, error } = await supabase
         .from("agendamentos")
         .select("*")
         .order("data_agendamento", { ascending: false })
         .order("nome_aluno", { ascending: true });
 
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-
-      const { data, error } = await query;
       if (error) throw new Error(error.message);
       return data || [];
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   useEffect(() => {
@@ -73,10 +65,7 @@ const AgendamentosPanel = () => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'agendamentos' },
         (payload) => {
-          // Apenas marca como tendo atualizações se a mudança for na unidade do usuário
-          if (profile?.role === 'SUPER_ADMIN' || (payload.new as Agendamento)?.unidade_id === profile?.unidade_id) {
-            setHasUpdates(true);
-          }
+          setHasUpdates(true);
         }
       )
       .subscribe();
@@ -84,42 +73,30 @@ const AgendamentosPanel = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile]);
+  }, []);
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
-    queryKey: ["atendentes", profile?.unidade_id], // Filtrar atendentes pela unidade do usuário
+    queryKey: ["atendentes"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return [];
-      let query = supabase.from("atendentes").select("*").order("name", { ascending: true });
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-      const { data, error } = await query;
+      const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
     staleTime: Infinity,
-    enabled: !!profile,
   });
 
   const { data: triageAttendants } = useQuery<Array<{ name: string, guiche: string | null }>>({
-    queryKey: ["triageAttendants", profile?.unidade_id], // Filtrar atendentes de triagem pela unidade
+    queryKey: ["triageAttendants"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return [];
-      let query = supabase
+      const { data, error } = await supabase
         .from("atendentes")
         .select("name, guiche")
         .eq("guiche", "TRIAGEM")
         .order("name", { ascending: true });
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-      const { data, error } = await query;
       if (error) throw new Error(error.message);
       return data || [];
     },
     staleTime: 5 * 60 * 1000,
-    enabled: !!profile,
   });
 
   const archiveMutation = useMutation({
@@ -193,7 +170,7 @@ const AgendamentosPanel = () => {
 
   const canManageData = useMemo(() => {
     if (!profile) return false;
-    return profile.role === 'ADMIN' || profile.role === 'TRIAGEM' || profile.role === 'SUPER_ADMIN';
+    return profile.role === 'ADMIN' || profile.role === 'TRIAGEM';
   }, [profile]);
 
   return (
@@ -279,7 +256,7 @@ const AgendamentosPanel = () => {
           )}
         </div>
 
-        <Button onClick={() => setIsAddAgendamentoDialogOpen(true)} disabled={!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN'}>
+        <Button onClick={() => setIsAddAgendamentoDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Agendamento
         </Button>

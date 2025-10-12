@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ShieldCheck, Shield, UserCheck, Building2 } from "lucide-react"; // Adicionado Building2
+import { MoreHorizontal, ShieldCheck, Shield, UserCheck } from "lucide-react";
 
-import { Profile, UserRole, Unidade } from "@/types"; // Importado Unidade
+import { Profile, UserRole } from "@/types";
 import { DataTable } from "@/components/agendamentos/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,24 +17,20 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuPortal,
-  DropdownMenuSeparator, // Adicionado DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext"; // Importado useAuth
 
 const RoleBadge = ({ role }: { role: UserRole }) => {
     const variant = {
         ADMIN: "destructive",
         ATENDENTE: "secondary",
         TRIAGEM: "default",
-        SUPER_ADMIN: "primary", // Nova variante para SUPER_ADMIN
-    }[role] as "destructive" | "secondary" | "default" | "primary";
+    }[role] as "destructive" | "secondary" | "default";
 
     const roleText = {
         ADMIN: "Admin",
         ATENDENTE: "Atendente",
         TRIAGEM: "Triagem",
-        SUPER_ADMIN: "Super Admin", // Texto para SUPER_ADMIN
     }[role];
 
     return <Badge variant={variant}>{roleText}</Badge>;
@@ -42,7 +38,6 @@ const RoleBadge = ({ role }: { role: UserRole }) => {
 
 export function UserManagementTable() {
   const queryClient = useQueryClient();
-  const { profile: currentUserProfile } = useAuth(); // Pega o perfil do usuário logado
 
   const { data: profiles, isLoading, error } = useQuery<Profile[]>({
     queryKey: ["profiles"],
@@ -51,16 +46,6 @@ export function UserManagementTable() {
       if (error) throw new Error(error.message);
       return data || [];
     },
-  });
-
-  const { data: unidades, isLoading: isLoadingUnidades } = useQuery<Unidade[]>({
-    queryKey: ["unidades"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("unidades").select("*").order("name", { ascending: true });
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-    enabled: currentUserProfile?.role === 'SUPER_ADMIN', // Só busca unidades se for SUPER_ADMIN
   });
 
   const updateUserRoleMutation = useMutation({
@@ -77,24 +62,6 @@ export function UserManagementTable() {
     },
   });
 
-  const updateUserUnidadeMutation = useMutation({
-    mutationFn: async ({ userId, unidadeId }: { userId: string; unidadeId: string | null }) => {
-      const { error } = await supabase.from("profiles").update({ unidade_id: unidadeId }).eq("id", userId);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => {
-      toast.success("Unidade do usuário atualizada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["profiles"] });
-    },
-    onError: (error) => {
-      toast.error(`Erro ao atualizar unidade: ${error.message}`);
-    },
-  });
-
-  const getUnidadeName = (unidadeId?: string | null) => {
-    return unidades?.find(u => u.id === unidadeId)?.name || "Não Atribuída";
-  };
-
   const columns: ColumnDef<Profile>[] = [
     {
       accessorKey: "first_name",
@@ -110,19 +77,9 @@ export function UserManagementTable() {
       cell: ({ row }) => <RoleBadge role={row.original.role} />,
     },
     {
-      accessorKey: "unidade_id",
-      header: "Unidade",
-      cell: ({ row }) => getUnidadeName(row.original.unidade_id),
-    },
-    {
       id: "actions",
       cell: ({ row }) => {
         const profile = row.original;
-        // Ações só visíveis para SUPER_ADMIN
-        if (currentUserProfile?.role !== 'SUPER_ADMIN') {
-          return null;
-        }
-
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -140,10 +97,6 @@ export function UserManagementTable() {
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'SUPER_ADMIN' })}>
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      Super Admin
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'ADMIN' })}>
                       <ShieldCheck className="mr-2 h-4 w-4" />
                       Admin
@@ -156,31 +109,6 @@ export function UserManagementTable() {
                       <Shield className="mr-2 h-4 w-4" />
                       Atendente
                     </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <Building2 className="mr-2 h-4 w-4" />
-                  <span>Atribuir Unidade</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => updateUserUnidadeMutation.mutate({ userId: profile.id, unidadeId: null })}>
-                      <span className="text-muted-foreground">-- Desatribuir --</span>
-                    </DropdownMenuItem>
-                    {isLoadingUnidades ? (
-                      <DropdownMenuItem disabled>Carregando unidades...</DropdownMenuItem>
-                    ) : (
-                      unidades?.map((unidade) => (
-                        <DropdownMenuItem key={unidade.id} onClick={() => updateUserUnidadeMutation.mutate({ userId: profile.id, unidadeId: unidade.id })}>
-                          {unidade.name}
-                        </DropdownMenuItem>
-                      ))
-                    )}
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>

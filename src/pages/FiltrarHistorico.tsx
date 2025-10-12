@@ -8,36 +8,25 @@ import { EditHistoricoDialog } from "@/components/historico/EditHistoricoDialog"
 import { Loader2, SearchX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 const queryClient = new QueryClient();
 
 const FiltrarHistoricoPanel = () => {
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data: agendamentos, isLoading, error } = useQuery<Agendamento[]>({
-    queryKey: ["historico-pendente", profile?.unidade_id], // Adiciona unidade_id como parte da chave da query
+    queryKey: ["historico-pendente"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
-      let query = supabase
+      const { data, error } = await supabase
         .from("agendamentos_historico")
         .select("*")
         .eq("origem_agendamento", "MANUAL") // Apenas atendimentos espontâneos
         .or("processo_id.is.null,processo_id.eq.")
         .order("data_agendamento", { ascending: false });
-      
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-
-      const { data, error } = await query;
       if (error) throw new Error(error.message);
       return data || [];
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   const handleEdit = (agendamento: Agendamento) => {

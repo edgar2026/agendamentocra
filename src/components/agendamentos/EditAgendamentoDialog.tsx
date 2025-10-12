@@ -6,7 +6,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 import { Button } from "@/components/ui/button";
 import {
@@ -53,7 +52,6 @@ interface EditAgendamentoDialogProps {
 export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdate }: EditAgendamentoDialogProps) {
   const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd");
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const {
     register,
@@ -67,28 +65,18 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
   });
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
-    queryKey: ["atendentes", profile?.unidade_id], // Filtrar atendentes pela unidade do usuário
+    queryKey: ["atendentes"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-      let query = supabase.from("atendentes").select("*").order("name", { ascending: true });
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-      const { data, error } = await query;
+      const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
   });
 
   const { data: serviceTypes, isLoading: isLoadingServiceTypes } = useQuery<ServiceType[]>({
-    queryKey: ["serviceTypes", profile?.unidade_id], // Filtrar serviceTypes pela unidade do usuário
+    queryKey: ["serviceTypes"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-      let query = supabase.from("service_types").select("*").order("name", { ascending: true });
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-      const { data, error } = await query;
+      const { data, error } = await supabase.from("service_types").select("*").order("name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
@@ -156,6 +144,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
+      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
       queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
       onOpenChange(false);
     },
@@ -180,7 +169,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       processo_id: data.processo_id,
       observacoes: data.observacoes,
       status_atendimento: data.status_atendimento,
-      // unidade_id is intentionally not updated here, it should remain its initial value
+      // origem_agendamento is intentionally not updated here, it should remain its initial value
     };
 
     updateAgendamentoMutation.mutate(updatedFields);
