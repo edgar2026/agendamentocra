@@ -70,9 +70,9 @@ export function AppointmentsTrendChart({ selectedDate, viewMode }: AppointmentsT
           return acc;
         }, {} as Record<string, number>);
 
-        // Ensure all hours from 08 to 18 are present, even if count is 0
-        const formattedData = Array.from({ length: 11 }, (_, i) => {
-          const hour = (i + 8).toString().padStart(2, '0'); // Hours from 08 to 18
+        // Ensure all hours from 08 to 22 are present, even if count is 0
+        const formattedData = Array.from({ length: 15 }, (_, i) => {
+          const hour = (i + 8).toString().padStart(2, '0'); // Hours from 08 to 22
           return { label: `${hour}:00`, count: hourlyCounts[hour] || 0 };
         });
         return formattedData;
