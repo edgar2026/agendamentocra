@@ -146,13 +146,13 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
         </CardContent>
       </Card>
 
-      <Card className="shadow-elevated border-l-4 border-secondary transition-all duration-300 hover:scale-[1.02]">
+      <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between pb-0">
           <CardTitle className="text-lg font-medium">Expontâneos (Manual)</CardTitle>
-          <PlusCircle className="h-4 w-4 text-secondary-foreground" />
+          <PlusCircle className="h-4 w-4 text-info" />
         </CardHeader>
         <CardContent className="pt-0">
-          <div className="text-3xl font-bold text-secondary-foreground">
+          <div className="text-3xl font-bold text-info">
             {isLoadingExpontaneos ? "Carregando..." : expontaneosCount}
           </div>
           <p className="text-xs text-muted-foreground">
