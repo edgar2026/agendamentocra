@@ -35,3 +35,12 @@ const AdminPanel = () => {
       </div>
     </div>
   );
+};
+
+const Admin = () => (
+  <QueryClientProvider client={queryClient}>
+    <AdminPanel />
+  </QueryClientProvider>
+);
+
+export default Admin;
