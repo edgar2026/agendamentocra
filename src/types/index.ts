@@ -27,7 +27,8 @@ export interface Agendamento {
 export interface Atendente {
   id: string;
   name: string;
-  guiche?: string; // Adicionado o campo guiche
+  guiche?: string;
+  user_id?: string | null; // Adicionado o campo para vincular ao usuário
   created_at: string;
 }
 
