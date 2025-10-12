@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 interface ServiceTypeRankingListProps {
   title: string;
@@ -14,10 +15,13 @@ interface ServiceTypeRankingListProps {
 
 export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMessage }: ServiceTypeRankingListProps) {
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data, isLoading, error } = useQuery<Array<{ tipo_atendimento: string; count: number }>>({
-    queryKey: ["serviceTypeRanking", viewMode, formattedDate],
+    queryKey: ["serviceTypeRanking", viewMode, formattedDate, profile?.unidade_id], // Adiciona unidade_id à chave
     queryFn: async () => {
+      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
+
       let queryAgendamentos;
       let queryHistorico;
       let queryArquivo; // Incluir tabela de arquivo
@@ -75,6 +79,13 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
           .select("tipo_atendimento");
       }
 
+      // Adiciona filtro de unidade, a menos que seja SUPER_ADMIN
+      if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
+        queryAgendamentos = queryAgendamentos.eq('unidade_id', profile.unidade_id);
+        queryHistorico = queryHistorico.eq('unidade_id', profile.unidade_id);
+        queryArquivo = queryArquivo.eq('unidade_id', profile.unidade_id);
+      }
+
       const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         queryAgendamentos.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
         queryHistorico.not("tipo_atendimento", "is", null).not("tipo_atendimento", "eq", ""),
@@ -105,6 +116,7 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
           return a.tipo_atendimento.localeCompare(b.tipo_atendimento);
         });
     },
+    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   if (isLoading) {

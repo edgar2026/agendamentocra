@@ -4,15 +4,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Users } from "lucide-react";
 import { Atendente } from "@/types";
+import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 export function AttendantGuicheList() {
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
+
   const { data: atendentes, isLoading, error } = useQuery<Atendente[]>({
-    queryKey: ["atendentes"],
+    queryKey: ["atendentes", profile?.unidade_id], // Adiciona unidade_id como parte da chave da query
     queryFn: async () => {
-      const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
+      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
+
+      let query = supabase.from("atendentes").select("*").order("name", { ascending: true });
+      if (profile?.role !== 'SUPER_ADMIN') {
+        query = query.eq('unidade_id', profile?.unidade_id);
+      }
+      const { data, error } = await query;
       if (error) throw new Error(error.message);
       return data || [];
     },
+    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   if (isLoading) {

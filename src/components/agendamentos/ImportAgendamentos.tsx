@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload } from 'lucide-react';
 import { Agendamento } from '@/types';
+import { useAuth } from '@/contexts/AuthContext'; // Importar useAuth
 
 // Define os cabeçalhos obrigatórios em um formato canônico (minúsculas)
 const REQUIRED_HEADERS_CANONICAL = [
@@ -33,6 +34,7 @@ const headerToDbColumnMap: { [key: string]: keyof Agendamento } = {
 export function ImportAgendamentos() {
   const [file, setFile] = useState<File | null>(null);
   const queryClient = useQueryClient();
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const importMutation = useMutation({
     mutationFn: async (agendamentos: Partial<Agendamento>[]) => {
@@ -44,7 +46,6 @@ export function ImportAgendamentos() {
       toast.success(`${count} agendamentos importados com sucesso!`);
       queryClient.invalidateQueries({ queryKey: ['agendamentos'] });
       queryClient.invalidateQueries({ queryKey: ['serviceTypes'] }); // Invalida a query de serviceTypes
-      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData"] }); // Removido: Invalida o novo gráfico
     },
     onError: (error) => {
       toast.error(`Erro ao salvar no banco de dados: ${error.message}`);
@@ -60,6 +61,10 @@ export function ImportAgendamentos() {
   const handleImport = () => {
     if (!file) {
       toast.warning('Por favor, selecione um arquivo.');
+      return;
+    }
+    if (!profile?.unidade_id) {
+      toast.error("Você precisa ter uma unidade atribuída para importar agendamentos.");
       return;
     }
 
@@ -120,6 +125,7 @@ export function ImportAgendamentos() {
             newRow.data_agendamento = today; // Define a data como hoje
             newRow.status_atendimento = 'AGENDADO'; // Define o status_atendimento como 'AGENDADO'
             newRow.origem_agendamento = 'PLANILHA'; // Define a origem como 'PLANILHA'
+            newRow.unidade_id = profile.unidade_id; // Atribui a unidade_id do perfil do usuário
             return newRow;
           });
 
@@ -152,7 +158,7 @@ export function ImportAgendamentos() {
   return (
     <div className="flex items-center gap-2">
       <Input type="file" accept=".xlsx, .xls" onChange={handleFileChange} className="max-w-xs" />
-      <Button onClick={handleImport} disabled={!file || importMutation.isPending}>
+      <Button onClick={handleImport} disabled={!file || importMutation.isPending || !profile?.unidade_id}>
         <Upload className="mr-2 h-4 w-4" />
         {importMutation.isPending ? 'Importando...' : 'Importar Planilha'}
       </Button>

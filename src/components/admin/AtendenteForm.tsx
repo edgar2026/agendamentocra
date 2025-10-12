@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Atendente } from "@/types";
+import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 const atendenteSchema = z.object({
   name: z.string().min(2, "O nome do atendente é obrigatório."),
@@ -34,6 +35,7 @@ interface AtendenteFormProps {
 
 export function AtendenteForm({ atendente, onOpenChange, open }: AtendenteFormProps) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const {
     register,
@@ -56,6 +58,10 @@ export function AtendenteForm({ atendente, onOpenChange, open }: AtendenteFormPr
 
   const saveAtendenteMutation = useMutation({
     mutationFn: async (data: AtendenteFormData) => {
+      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') {
+        throw new Error("Você precisa ter uma unidade atribuída para gerenciar atendentes.");
+      }
+
       if (atendente) {
         // Edição
         const { error } = await supabase
@@ -65,7 +71,11 @@ export function AtendenteForm({ atendente, onOpenChange, open }: AtendenteFormPr
         if (error) throw new Error(error.message);
       } else {
         // Criação
-        const { error } = await supabase.from("atendentes").insert([{ name: data.name, guiche: data.guiche }]); // Incluir guiche na inserção
+        const { error } = await supabase.from("atendentes").insert([{ 
+          name: data.name, 
+          guiche: data.guiche,
+          unidade_id: profile?.unidade_id // Atribui a unidade_id do perfil do usuário
+        }]); 
         if (error) throw new Error(error.message);
       }
     },
@@ -110,7 +120,7 @@ export function AtendenteForm({ atendente, onOpenChange, open }: AtendenteFormPr
             {errors.guiche && <p className="col-span-4 text-red-500 text-sm text-right">{errors.guiche.message}</p>}
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={saveAtendenteMutation.isPending}>
+            <Button type="submit" disabled={saveAtendenteMutation.isPending || (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN')}>
               {saveAtendenteMutation.isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>

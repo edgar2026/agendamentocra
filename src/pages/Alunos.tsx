@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Search, User, Users } from "lucide-react";
 import { AlunoHistoricoDialog } from "@/components/alunos/AlunoHistoricoDialog";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
+import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 const queryClient = new QueryClient();
 
@@ -20,11 +21,12 @@ const AlunosPanel = () => {
   const [submittedSearch, setSubmittedSearch] = useState("");
   const [selectedAluno, setSelectedAluno] = useState<AlunoInfo | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data: alunos, isLoading, error, isFetching } = useQuery<AlunoInfo[]>({
-    queryKey: ["alunosSearch", submittedSearch],
+    queryKey: ["alunosSearch", submittedSearch, profile?.unidade_id], // Adiciona unidade_id à chave
     queryFn: async () => {
-      if (!submittedSearch || submittedSearch.length < 3) {
+      if (!submittedSearch || submittedSearch.length < 3 || (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN')) {
         return [];
       }
 
@@ -37,7 +39,7 @@ const AlunosPanel = () => {
       
       return data || [];
     },
-    enabled: submittedSearch.length >= 3,
+    enabled: submittedSearch.length >= 3 && !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -68,7 +70,7 @@ const AlunosPanel = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
-            <Button type="submit" disabled={isFetching || searchTerm.length < 3}>
+            <Button type="submit" disabled={isFetching || searchTerm.length < 3 || (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN')}>
               {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
               Pesquisar
             </Button>

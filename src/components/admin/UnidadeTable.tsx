@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Edit, Trash2, ArrowUpDown, PlusCircle } from "lucide-react";
 
-import { Atendente } from "@/types";
+import { Unidade } from "@/types";
 import { DataTable } from "@/components/agendamentos/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,46 +15,37 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { AtendenteForm } from "./AtendenteForm";
-import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
+import { UnidadeForm } from "./UnidadeForm";
 
-export function AtendenteTable() {
+export function UnidadeTable() {
   const queryClient = useQueryClient();
-  const [editingAtendente, setEditingAtendente] = useState<Atendente | null>(null);
+  const [editingUnidade, setEditingUnidade] = useState<Unidade | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
-  const { data: atendentes, isLoading, error } = useQuery<Atendente[]>({
-    queryKey: ["atendentes", profile?.unidade_id], // Adiciona unidade_id como parte da chave da query
+  const { data: unidades, isLoading, error } = useQuery<Unidade[]>({
+    queryKey: ["unidades"],
     queryFn: async () => {
-      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
-
-      let query = supabase.from("atendentes").select("*").order("name", { ascending: true });
-      if (profile?.role !== 'SUPER_ADMIN') {
-        query = query.eq('unidade_id', profile?.unidade_id);
-      }
-      const { data, error } = await query;
+      const { data, error } = await supabase.from("unidades").select("*").order("name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
-    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
-  const deleteAtendenteMutation = useMutation({
+  const deleteUnidadeMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("atendentes").delete().eq("id", id);
+      const { error } = await supabase.from("unidades").delete().eq("id", id);
       if (error) throw new Error(error.message);
     },
     onSuccess: () => {
-      toast.success("Atendente excluído com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["atendentes"] });
+      toast.success("Unidade excluída com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["unidades"] });
     },
     onError: (error) => {
-      toast.error(`Erro ao excluir atendente: ${error.message}`);
+      toast.error(`Erro ao excluir unidade: ${error.message}`);
     },
   });
 
-  const columns: ColumnDef<Atendente>[] = [
+  const columns: ColumnDef<Unidade>[] = [
     {
       accessorKey: "name",
       header: ({ column }) => (
@@ -62,14 +53,10 @@ export function AtendenteTable() {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Nome
+          Nome da Unidade
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-    },
-    {
-      accessorKey: "guiche", // Nova coluna para Guichê
-      header: "Guichê",
     },
     {
       accessorKey: "created_at",
@@ -79,7 +66,7 @@ export function AtendenteTable() {
     {
       id: "actions",
       cell: ({ row }) => {
-        const atendente = row.original;
+        const unidade = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -92,7 +79,7 @@ export function AtendenteTable() {
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => {
-                  setEditingAtendente(atendente);
+                  setEditingUnidade(unidade);
                   setIsFormOpen(true);
                 }}
               >
@@ -100,7 +87,7 @@ export function AtendenteTable() {
                 Editar
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => deleteAtendenteMutation.mutate(atendente.id)}
+                onClick={() => deleteUnidadeMutation.mutate(unidade.id)}
                 className="text-destructive focus:text-destructive"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
@@ -118,27 +105,26 @@ export function AtendenteTable() {
       <div className="flex justify-end">
         <Button
           onClick={() => {
-            setEditingAtendente(null);
+            setEditingUnidade(null);
             setIsFormOpen(true);
           }}
-          disabled={!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN'} // Desabilita se não tiver unidade e não for SUPER_ADMIN
         >
           <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Atendente
+          Adicionar Unidade
         </Button>
 
-        <AtendenteForm
-          atendente={editingAtendente}
+        <UnidadeForm
+          unidade={editingUnidade}
           open={isFormOpen}
           onOpenChange={(open) => {
             setIsFormOpen(open);
-            if (!open) setEditingAtendente(null);
+            if (!open) setEditingUnidade(null);
           }}
         />
       </div>
-      {isLoading && <p>Carregando atendentes...</p>}
-      {error && <p className="text-red-500">Erro ao carregar atendentes: {error.message}</p>}
-      {atendentes && <DataTable columns={columns} data={atendentes} />}
+      {isLoading && <p>Carregando unidades...</p>}
+      {error && <p className="text-red-500">Erro ao carregar unidades: {error.message}</p>}
+      {unidades && <DataTable columns={columns} data={unidades} />}
     </div>
   );
 }

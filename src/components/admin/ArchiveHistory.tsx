@@ -35,8 +35,8 @@ export function ArchiveHistory() {
     },
   });
 
-  if (profile?.role !== 'ADMIN') {
-    return null; // Não renderiza nada se o usuário não for admin
+  if (profile?.role !== 'ADMIN' && profile?.role !== 'SUPER_ADMIN') { // SUPER_ADMIN também pode arquivar
+    return null; // Não renderiza nada se o usuário não for admin ou super_admin
   }
 
   return (

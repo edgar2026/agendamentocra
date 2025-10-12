@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Agendamento, Atendente } from "@/types";
+import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 const editHistoricoSchema = z.object({
   processo_id: z.string().min(1, "O Nº do Chamado é obrigatório."),
@@ -42,6 +43,7 @@ interface EditHistoricoDialogProps {
 
 export function EditHistoricoDialog({ agendamento, open, onOpenChange }: EditHistoricoDialogProps) {
   const queryClient = useQueryClient();
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const {
     register,
@@ -55,12 +57,20 @@ export function EditHistoricoDialog({ agendamento, open, onOpenChange }: EditHis
   });
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
-    queryKey: ["atendentes"],
+    queryKey: ["atendentes", agendamento?.unidade_id || profile?.unidade_id], // Filtrar atendentes pela unidade do agendamento ou do usuário
     queryFn: async () => {
-      const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
+      const targetUnidadeId = agendamento?.unidade_id || profile?.unidade_id;
+      if (!targetUnidadeId && profile?.role !== 'SUPER_ADMIN') return [];
+
+      let query = supabase.from("atendentes").select("*").order("name", { ascending: true });
+      if (profile?.role !== 'SUPER_ADMIN' && targetUnidadeId) {
+        query = query.eq('unidade_id', targetUnidadeId);
+      }
+      const { data, error } = await query;
       if (error) throw new Error(error.message);
       return data || [];
     },
+    enabled: !!profile,
   });
 
   const selectedAtendenteId = watch("atendente");

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AttendantPerformance } from "@/types";
 import { Loader2, TrendingDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext"; // Importar useAuth
 
 interface TopAttendantsListProps {
   title: string;
@@ -15,10 +16,13 @@ interface TopAttendantsListProps {
 
 export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage }: TopAttendantsListProps) {
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
+  const { profile } = useAuth(); // Obter o perfil do usuário logado
 
   const { data, isLoading, error } = useQuery<AttendantPerformance[]>({
-    queryKey: ["topAttendants", viewMode, formattedDate],
+    queryKey: ["topAttendants", viewMode, formattedDate, profile?.unidade_id], // Adiciona unidade_id à chave
     queryFn: async () => {
+      if (!profile?.unidade_id && profile?.role !== 'SUPER_ADMIN') return []; // Não buscar se não tiver unidade e não for SUPER_ADMIN
+
       let queryAgendamentos;
       let queryHistorico;
       let queryArquivo; // Incluir tabela de arquivo
@@ -76,6 +80,13 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
           .select("atendente");
       }
 
+      // Adiciona filtro de unidade, a menos que seja SUPER_ADMIN
+      if (profile?.role !== 'SUPER_ADMIN' && profile?.unidade_id) {
+        queryAgendamentos = queryAgendamentos.eq('unidade_id', profile.unidade_id);
+        queryHistorico = queryHistorico.eq('unidade_id', profile.unidade_id);
+        queryArquivo = queryArquivo.eq('unidade_id', profile.unidade_id);
+      }
+
       const [{ data: rawDataAgendamentos, error: errorAgendamentos }, { data: rawDataHistorico, error: errorHistorico }, { data: rawDataArquivo, error: errorArquivo }] = await Promise.all([
         queryAgendamentos.not("atendente", "is", null).not("atendente", "eq", ""),
         queryHistorico.not("atendente", "is", null).not("atendente", "eq", ""),
@@ -106,6 +117,7 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
           return a.atendente.localeCompare(b.atendente);
         });
     },
+    enabled: !!profile, // Habilita a query apenas se o perfil estiver carregado
   });
 
   const maxCount = data && data.length > 0 ? data[0].count : 0;
