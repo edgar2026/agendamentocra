@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types';
@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean; // True enquanto a sessão inicial está sendo determinada
   profileLoading: boolean; // True enquanto o perfil está sendo buscado
   logout: () => Promise<void>;
+  refetchProfile: () => Promise<void>; // Adicionado para recarregar o perfil
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profileLoading, setProfileLoading] = useState(false); // Carregamento dos dados do perfil
 
   // Função para buscar o perfil do usuário
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = useCallback(async (userId: string) => {
     setProfileLoading(true);
     try {
       const { data: profileData, error: profileError } = await supabase
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
       
       if (profileError) throw profileError;
+      console.log("AuthContext: Perfil carregado:", profileData); // Log para depuração
       setProfile(profileData as Profile);
     } catch (error) {
       console.error("AuthContext: Erro ao buscar perfil:", error);
@@ -39,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setProfileLoading(false);
     }
-  };
+  }, []); // O array de dependências vazio garante que o efeito seja executado apenas uma vez na montagem
 
   useEffect(() => {
     // 1. Lida com o carregamento inicial da sessão
@@ -90,7 +92,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []); // Array de dependências vazio significa que isso é executado uma vez na montagem
+  }, [fetchUserProfile]); // Adicionado fetchUserProfile como dependência
 
   const logout = async () => {
     await supabase.auth.signOut();
@@ -105,6 +107,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     profileLoading,
     logout,
+    refetchProfile: useCallback(async () => { // Expondo a função de recarregar perfil
+      if (user) {
+        await fetchUserProfile(user.id);
+      }
+    }, [user, fetchUserProfile]),
   };
 
   return (
