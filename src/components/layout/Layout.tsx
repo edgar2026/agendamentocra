@@ -1,6 +1,9 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { NotificationDialog } from "./NotificationDialog";
+import { useState, useEffect } from "react";
 
 const pageTitles: { [key: string]: string } = {
   "/": "Painel de Atendimentos",
@@ -12,6 +15,22 @@ const pageTitles: { [key: string]: string } = {
 
 export function Layout() {
   const location = useLocation();
+  const { notification, acknowledgeNotification } = useAuth();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  useEffect(() => {
+    if (notification) {
+      setIsNotificationOpen(true);
+    }
+  }, [notification]);
+
+  const handleAcknowledge = () => {
+    if (notification) {
+      acknowledgeNotification(notification.id);
+      setIsNotificationOpen(false);
+    }
+  };
+
   const title = pageTitles[location.pathname] || "UNINASSAU";
 
   return (
@@ -21,6 +40,13 @@ export function Layout() {
         <Outlet />
       </main>
       <Footer />
+      {notification && (
+        <NotificationDialog
+          notification={notification}
+          open={isNotificationOpen}
+          onAcknowledge={handleAcknowledge}
+        />
+      )}
     </div>
   );
 }

@@ -48,14 +48,28 @@ export function UserManagementTable() {
     },
   });
 
+  const createNotificationMutation = useMutation({
+    mutationFn: async ({ userId, message }: { userId: string; message: string }) => {
+      const { error } = await supabase.from("system_notifications").insert({ user_id: userId, message });
+      if (error) throw new Error(`Falha ao criar notificação: ${error.message}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notificationStatus"] });
+    },
+  });
+
   const updateUserRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
       const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
       if (error) throw new Error(error.message);
+      return { userId, role };
     },
-    onSuccess: () => {
+    onSuccess: ({ userId, role }) => {
       toast.success("Função do usuário atualizada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      
+      const message = `Sua função foi alterada para ${role}. Por favor, saia e entre novamente no sistema para que a mudança tenha efeito.`;
+      createNotificationMutation.mutate({ userId, message });
     },
     onError: (error) => {
       toast.error(`Erro ao atualizar função: ${error.message}`);

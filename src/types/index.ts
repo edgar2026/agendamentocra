@@ -52,3 +52,15 @@ export interface AttendantPerformance {
   atendente: string;
   count: number;
 }
+
+export interface SystemNotification {
+  id: string;
+  user_id: string;
+  message: string;
+  created_at: string;
+  acknowledged_at: string | null;
+  profiles?: {
+    first_name: string | null;
+    last_name: string | null;
+  };
+}
