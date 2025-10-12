@@ -1,23 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, ShieldCheck, Shield, UserCheck } from "lucide-react";
 
 import { Profile, UserRole } from "@/types";
 import { DataTable } from "@/components/agendamentos/data-table";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-  DropdownMenuPortal,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
 const RoleBadge = ({ role }: { role: UserRole }) => {
@@ -37,28 +23,12 @@ const RoleBadge = ({ role }: { role: UserRole }) => {
 };
 
 export function UserManagementTable() {
-  const queryClient = useQueryClient();
-
   const { data: profiles, isLoading, error } = useQuery<Profile[]>({
     queryKey: ["profiles"],
     queryFn: async () => {
       const { data, error } = await supabase.from("profiles").select("*").order("first_name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
-    },
-  });
-
-  const updateUserRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: UserRole }) => {
-      const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
-      if (error) throw new Error(error.message);
-    },
-    onSuccess: () => {
-      toast.success("Função do usuário atualizada com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["profiles"] });
-    },
-    onError: (error) => {
-      toast.error(`Erro ao atualizar função: ${error.message}`);
     },
   });
 
@@ -75,47 +45,6 @@ export function UserManagementTable() {
       accessorKey: "role",
       header: "Função",
       cell: ({ row }) => <RoleBadge role={row.original.role} />,
-    },
-    {
-      id: "actions",
-      cell: ({ row }) => {
-        const profile = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Abrir menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Ações</DropdownMenuLabel>
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  <span>Alterar Função</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'ADMIN' })}>
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      Admin
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'TRIAGEM' })}>
-                      <UserCheck className="mr-2 h-4 w-4" />
-                      Triagem
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateUserRoleMutation.mutate({ userId: profile.id, role: 'ATENDENTE' })}>
-                      <Shield className="mr-2 h-4 w-4" />
-                      Atendente
-                    </DropdownMenuItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
     },
   ];
 
