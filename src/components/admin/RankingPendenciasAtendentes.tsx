@@ -32,7 +32,14 @@ export function RankingPendenciasAtendentes() {
 
       const ranked = Object.entries(counts)
         .map(([atendente, count]) => ({ atendente, count }))
-        .sort((a, b) => b.count - a.count); // Ordena do maior para o menor
+        .sort((a, b) => {
+          // Primeiro, ordena por contagem (maior para menor)
+          if (b.count !== a.count) {
+            return b.count - a.count;
+          }
+          // Se houver empate, ordena por nome (alfabeticamente)
+          return a.atendente.localeCompare(b.atendente);
+        });
 
       return ranked;
     },
@@ -76,7 +83,7 @@ export function RankingPendenciasAtendentes() {
                   >
                     <div className="flex items-center gap-3">
                       <span className="font-bold text-lg w-8 text-center">
-                        {index === 0 ? <Trophy className="h-6 w-6 text-amber-500" /> : `${index + 1}.`}
+                        {index === 0 ? <AlertTriangle className="h-6 w-6 text-destructive" /> : `${index + 1}.`}
                       </span>
                       <span className="font-medium">{item.atendente}</span>
                     </div>
