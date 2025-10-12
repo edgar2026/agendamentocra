@@ -27,15 +27,21 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 1. Buscar todos os dados da tabela de histórico
+    // Calcula a data de 6 meses atrás
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgoISO = sixMonthsAgo.toISOString();
+
+    // 1. Buscar dados do histórico com mais de 6 meses
     const { data: historico, error: selectError } = await supabaseServiceClient
       .from('agendamentos_historico')
-      .select('*');
+      .select('*')
+      .lt('created_at', sixMonthsAgoISO); // Filtra por registros mais antigos que 6 meses
 
     if (selectError) throw new Error(`Erro ao buscar histórico: ${selectError.message}`);
 
     if (!historico || historico.length === 0) {
-      return new Response(JSON.stringify({ message: "Nenhum dado no histórico para arquivar." }), {
+      return new Response(JSON.stringify({ message: "Nenhum dado com mais de 6 meses no histórico para arquivar." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
@@ -57,18 +63,18 @@ serve(async (req) => {
 
     if (uploadError) throw new Error(`Erro ao fazer upload para o Storage: ${uploadError.message}`);
 
-    // 4. Se o upload for bem-sucedido, limpar a tabela de histórico
+    // 4. Se o upload for bem-sucedido, limpar os registros arquivados da tabela de histórico
     const { error: deleteError } = await supabaseServiceClient
       .from('agendamentos_historico')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Condição para deletar todos
+      .lt('created_at', sixMonthsAgoISO); // Deleta os mesmos registros que foram arquivados
 
     if (deleteError) {
       // O upload já foi feito, então o erro é apenas na limpeza.
       throw new Error(`ARQUIVO SALVO, mas erro ao limpar histórico: ${deleteError.message}`);
     }
 
-    return new Response(JSON.stringify({ message: `${historico.length} registros arquivados com sucesso em '${filePath}'.` }), {
+    return new Response(JSON.stringify({ message: `${historico.length} registros com mais de 6 meses foram arquivados com sucesso em '${filePath}'.` }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
