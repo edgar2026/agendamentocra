@@ -71,7 +71,12 @@ export function TopAttendantsList({ title, viewMode, selectedDate, emptyMessage 
 
       return Object.entries(counts)
         .map(([atendente, count]) => ({ atendente, count }))
-        .sort((a, b) => b.count - a.count);
+        .sort((a, b) => {
+          if (b.count !== a.count) {
+            return b.count - a.count;
+          }
+          return a.atendente.localeCompare(b.atendente);
+        });
     },
   });
 

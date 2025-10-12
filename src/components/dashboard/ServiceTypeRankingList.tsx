@@ -70,7 +70,12 @@ export function ServiceTypeRankingList({ title, viewMode, selectedDate, emptyMes
 
       return Object.entries(counts)
         .map(([tipo_atendimento, count]) => ({ tipo_atendimento, count }))
-        .sort((a, b) => b.count - a.count);
+        .sort((a, b) => {
+          if (b.count !== a.count) {
+            return b.count - a.count;
+          }
+          return a.tipo_atendimento.localeCompare(b.tipo_atendimento);
+        });
     },
   });
 
