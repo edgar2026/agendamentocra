@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Trophy, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Loader2, Trophy, AlertTriangle } from "lucide-react";
 
 interface RankedAttendant {
   atendente: string;
@@ -45,9 +45,6 @@ export function RankingPendenciasAtendentes() {
     },
   });
 
-  const maxCount = rankedAttendants && rankedAttendants.length > 0 ? rankedAttendants[0].count : 0;
-  const minCount = rankedAttendants && rankedAttendants.length > 0 ? rankedAttendants[rankedAttendants.length - 1].count : 0;
-
   return (
     <Card>
       <CardHeader>
@@ -79,30 +76,23 @@ export function RankingPendenciasAtendentes() {
               </div>
             ) : (
               <ul className="space-y-2">
-                {rankedAttendants.map((item, index) => {
-                  const isTop = item.count === maxCount && maxCount > 0;
-                  const isBottom = item.count === minCount && minCount < maxCount;
-                  
-                  return (
-                    <li
-                      key={item.atendente}
-                      className="flex items-center justify-between p-2 rounded-md bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-lg w-8 text-center flex justify-center items-center">
-                          {isTop && <AlertTriangle className="h-6 w-6 text-destructive" />}
-                          {isBottom && <CheckCircle2 className="h-6 w-6 text-success" />}
-                          {!isTop && !isBottom && `${index + 1}.`}
-                        </span>
-                        <span className="font-medium">{item.atendente}</span>
-                      </div>
-                      <span className="font-bold text-destructive text-lg">
-                        {item.count}
-                        <span className="text-sm font-normal ml-1">pendência(s)</span>
+                {rankedAttendants.map((item, index) => (
+                  <li
+                    key={item.atendente}
+                    className="flex items-center justify-between p-2 rounded-md bg-muted/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-lg w-8 text-center">
+                        {index + 1}.
                       </span>
-                    </li>
-                  );
-                })}
+                      <span className="font-medium">{item.atendente}</span>
+                    </div>
+                    <span className="font-bold text-destructive text-lg">
+                      {item.count}
+                      <span className="text-sm font-normal ml-1">pendência(s)</span>
+                    </span>
+                  </li>
+                ))}
               </ul>
             )}
           </>
