@@ -7,6 +7,7 @@ import { getHistoricoColumns } from "@/components/historico/columns";
 import { EditHistoricoDialog } from "@/components/historico/EditHistoricoDialog";
 import { Loader2, SearchX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const FiltrarHistoricoPanel = () => {
 
   return (
     <div className="space-y-6">
+      <PinkOctoberBanner />
       <Card>
         <CardHeader>
           <CardTitle>Histórico de espontâneo sem nº do chamado</CardTitle>
