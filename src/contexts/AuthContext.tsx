@@ -1,17 +1,15 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile, SystemNotification } from '@/types';
+import { Profile } from '@/types';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
-  notification: SystemNotification | null;
-  loading: boolean;
-  profileLoading: boolean;
+  loading: boolean; // True enquanto a sessão inicial está sendo determinada
+  profileLoading: boolean; // True enquanto o perfil está sendo buscado
   logout: () => Promise<void>;
-  acknowledgeNotification: (notificationId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,20 +18,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [notification, setNotification] = useState<SystemNotification | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Carregamento inicial da sessão
+  const [profileLoading, setProfileLoading] = useState(false); // Carregamento dos dados do perfil
 
+  // Função para buscar o perfil do usuário
   const fetchUserProfile = async (userId: string) => {
     setProfileLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, avatar_url, role, updated_at')
         .eq('id', userId)
         .single();
-      if (error) throw error;
-      setProfile(data as Profile);
+      
+      if (profileError) throw profileError;
+      setProfile(profileData as Profile);
     } catch (error) {
       console.error("AuthContext: Erro ao buscar perfil:", error);
       setProfile(null);
@@ -42,97 +41,77 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const fetchPendingNotification = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('system_notifications')
-        .select('*')
-        .eq('user_id', userId)
-        .is('acknowledged_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-      if (error && error.code !== 'PGRST116') throw error; // Ignora erro de "nenhuma linha encontrada"
-      setNotification(data);
-    } catch (error) {
-      console.error("AuthContext: Erro ao buscar notificação:", error);
-      setNotification(null);
-    }
-  };
-
-  const acknowledgeNotification = async (notificationId: string) => {
-    try {
-      const { error } = await supabase
-        .from('system_notifications')
-        .update({ acknowledged_at: new Date().toISOString() })
-        .eq('id', notificationId);
-      if (error) throw error;
-      setNotification(null); // Remove a notificação da UI
-    } catch (error) {
-      console.error("AuthContext: Erro ao confirmar notificação:", error);
-      toast.error("Não foi possível confirmar a notificação.");
-    }
-  };
-
   useEffect(() => {
+    // 1. Lida com o carregamento inicial da sessão
     const getInitialSession = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
         setSession(initialSession);
         const currentUser = initialSession?.user ?? null;
         setUser(currentUser);
-        setLoading(false);
+
+        // Define loading como false *depois* que a sessão e o usuário são determinados,
+        // mas *antes* que a busca do perfil possa potencialmente atrasar.
+        setLoading(false); 
 
         if (currentUser) {
-          await fetchUserProfile(currentUser.id);
-          await fetchPendingNotification(currentUser.id);
+          fetchUserProfile(currentUser.id); // Busca o perfil em segundo plano
         } else {
           setProfile(null);
-          setNotification(null);
         }
       } catch (error) {
         console.error("AuthContext: Erro ao inicializar sessão:", error);
-        setLoading(false);
+        setSession(null);
+        setUser(null);
+        setProfile(null);
+        setLoading(false); // Garante que loading seja false mesmo em caso de erro
       }
     };
 
     getInitialSession();
 
+    // 2. Ouve por mudanças no estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
       setSession(newSession);
       const currentUser = newSession?.user ?? null;
       setUser(currentUser);
 
       if (currentUser) {
-        await fetchUserProfile(currentUser.id);
-        await fetchPendingNotification(currentUser.id);
+        fetchUserProfile(currentUser.id); // Busca o perfil na mudança de estado de autenticação
       } else {
         setProfile(null);
-        setNotification(null);
       }
+      // Não é necessário definir loading(false) aqui, pois é para o carregamento inicial.
+      // O componente App reagirá às mudanças em `session` e `user`.
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []); // Array de dependências vazio significa que isso é executado uma vez na montagem
 
   const logout = async () => {
     await supabase.auth.signOut();
+    // Limpa o perfil ao fazer logout
     setProfile(null);
-    setNotification(null);
   };
 
   const value = {
     session,
     user,
     profile,
-    notification,
     loading,
     profileLoading,
     logout,
-    acknowledgeNotification,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

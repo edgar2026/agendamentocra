@@ -3,9 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Edit, Trash2, ArrowUpDown, PlusCircle, User } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, ArrowUpDown, PlusCircle } from "lucide-react";
 
-import { Atendente, Profile } from "@/types";
+import { Atendente } from "@/types";
 import { DataTable } from "@/components/agendamentos/data-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +26,6 @@ export function AtendenteTable() {
     queryKey: ["atendentes"],
     queryFn: async () => {
       const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
-      if (error) throw new Error(error.message);
-      return data || [];
-    },
-  });
-
-  const { data: profiles } = useQuery<Profile[]>({
-    queryKey: ["profiles"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("id, first_name, last_name");
       if (error) throw new Error(error.message);
       return data || [];
     },
@@ -68,23 +59,13 @@ export function AtendenteTable() {
       ),
     },
     {
-      accessorKey: "guiche",
+      accessorKey: "guiche", // Nova coluna para Guichê
       header: "Guichê",
     },
     {
-      accessorKey: "user_id",
-      header: "Usuário Vinculado",
-      cell: ({ row }) => {
-        const userId = row.original.user_id;
-        if (!userId) return <span className="text-muted-foreground">Nenhum</span>;
-        const profile = profiles?.find(p => p.id === userId);
-        return profile ? (
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            {profile.first_name} {profile.last_name}
-          </div>
-        ) : "Carregando...";
-      },
+      accessorKey: "created_at",
+      header: "Criado Em",
+      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString('pt-BR', { timeZone: 'UTC' }),
     },
     {
       id: "actions",
