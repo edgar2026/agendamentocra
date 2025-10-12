@@ -17,7 +17,8 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { agendamentoIds } } = await req.json();
+    // Correção: Removido o '}' extra na desestruturação
+    const { agendamentoIds } = await req.json();
     if (!agendamentoIds || !Array.isArray(agendamentoIds) || agendamentoIds.length === 0) {
       return new Response(JSON.stringify({ message: "Nenhum ID de agendamento fornecido para arquivar." }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
