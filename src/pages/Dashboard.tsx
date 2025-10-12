@@ -12,12 +12,15 @@ import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList"
 import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
+import { useAuth } from "@/contexts/AuthContext";
+import { RankingPendenciasAtendentes } from "@/components/admin/RankingPendenciasAtendentes";
 
 const queryClient = new QueryClient();
 
 const DashboardPanel = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
+  const { profile } = useAuth();
 
   const formattedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd");
 
@@ -74,6 +77,13 @@ const DashboardPanel = () => {
         />
         <AttendantGuicheList />
       </div>
+
+      {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight mb-2">Monitoramento de Qualidade de Dados</h2>
+          <RankingPendenciasAtendentes />
+        </div>
+      )}
     </div>
   );
 };
