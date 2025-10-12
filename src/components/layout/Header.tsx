@@ -21,6 +21,10 @@ export function Header({ title }: HeaderProps) {
   const location = useLocation();
   const { profile } = useAuth();
 
+  // Adicionando log para depuração
+  console.log("Header: Perfil do usuário:", profile);
+  console.log("Header: Papel do usuário:", profile?.role);
+
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-6">
