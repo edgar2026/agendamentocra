@@ -4,6 +4,7 @@ import { UserManagementTable } from "@/components/admin/UserManagementTable";
 import { ExportHistorico } from "@/components/admin/ExportHistorico";
 import { ArchiveHistory } from "@/components/admin/ArchiveHistory";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
+import { RankingPendenciasAtendentes } from "@/components/admin/RankingPendenciasAtendentes";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,11 @@ const AdminPanel = () => {
           <ExportHistorico />
           <ArchiveHistory />
         </div>
+      </div>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight mb-2">Monitoramento de Qualidade de Dados</h2>
+        <p className="text-muted-foreground mb-6">Acompanhe os atendentes que precisam de atenção no preenchimento dos dados.</p>
+        <RankingPendenciasAtendentes />
       </div>
       <div>
         <h2 className="text-2xl font-bold tracking-tight mb-2">Gerenciar Atendentes</h2>
