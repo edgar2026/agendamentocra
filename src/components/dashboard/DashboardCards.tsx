@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, CheckCircle2, XCircle, PlusCircle, AlertTriangle } from "lucide-react";
+import { CalendarDays, CheckCircle2, XCircle, PlusCircle, AlertTriangle, FileText } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -70,6 +70,11 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: expontaneosCount, isLoading: isLoadingExpontaneos } = useQuery<number>({
     queryKey: ["dashboardExpontaneosCount", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "MANUAL")),
+  });
+
+  const { data: solicitacoesCount, isLoading: isLoadingSolicitacoes } = useQuery<number>({
+    queryKey: ["dashboardSolicitacoesCount", selectedDate, viewMode],
+    queryFn: () => fetchCombinedCount(query => query.not('solicitacao_aluno', 'is', null).not('solicitacao_aluno', 'eq', '')),
   });
 
   const { data: pendenciasProcesso, isLoading: isLoadingPendencias } = useQuery<number>({
@@ -157,6 +162,21 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
           </div>
           <p className="text-xs text-muted-foreground">
             Agendamentos manuais {periodText}
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
+        <CardHeader className="flex flex-row items-center justify-between pb-0">
+          <CardTitle className="text-lg font-medium">Total de Solicitações</CardTitle>
+          <FileText className="h-4 w-4 text-info" />
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="text-3xl font-bold text-info">
+            {isLoadingSolicitacoes ? "Carregando..." : solicitacoesCount}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Solicitações registradas {periodText}
           </p>
         </CardContent>
       </Card>

@@ -13,6 +13,8 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { RankingPendenciasAtendentes } from "@/components/admin/RankingPendenciasAtendentes";
+import { SolicitacaoChart } from "@/components/dashboard/SolicitacaoChart";
+import { SolicitacaoRankingList } from "@/components/dashboard/SolicitacaoRankingList";
 
 const DashboardPanel = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -56,7 +58,7 @@ const DashboardPanel = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
         <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
         <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
-        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} />
+        <SolicitacaoChart selectedDate={formattedDate} viewMode={viewMode} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
@@ -72,6 +74,16 @@ const DashboardPanel = () => {
           selectedDate={selectedDate}
           emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
         />
+        <SolicitacaoRankingList
+          title={`Ranking de Solicitações ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
+          viewMode={viewMode}
+          selectedDate={selectedDate}
+          emptyMessage={`Nenhuma solicitação registrada ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} />
         <AttendantGuicheList />
       </div>
 
