@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, CheckCircle2, XCircle, PlusCircle, AlertTriangle, FileText } from "lucide-react";
+import { CalendarDays, CheckCircle2, XCircle, PlusCircle, AlertTriangle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -70,11 +70,6 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   const { data: expontaneosCount, isLoading: isLoadingExpontaneos } = useQuery<number>({
     queryKey: ["dashboardExpontaneosCount", selectedDate, viewMode],
     queryFn: () => fetchCombinedCount(query => query.eq("origem_agendamento", "MANUAL")),
-  });
-
-  const { data: solicitacoesCount, isLoading: isLoadingSolicitacoes } = useQuery<number>({
-    queryKey: ["dashboardSolicitacoesCount", selectedDate, viewMode],
-    queryFn: () => fetchCombinedCount(query => query.not('solicitacao_aluno', 'is', null).not('solicitacao_aluno', 'eq', '')),
   });
 
   const { data: pendenciasProcesso, isLoading: isLoadingPendencias } = useQuery<number>({
@@ -157,8 +152,8 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Bottom Row */}
       <div className="flex justify-center">
-        <div className={`w-full ${isAdminOrTriagem ? 'lg:w-3/4' : 'lg:w-1/2'}`}>
-          <div className={`grid gap-4 md:grid-cols-2 ${isAdminOrTriagem ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
+        <div className={`w-full ${isAdminOrTriagem ? 'lg:w-1/2' : 'lg:w-1/4'}`}>
+          <div className={`grid gap-4 ${isAdminOrTriagem ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
             <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Expontâneos (Manual)</CardTitle>
@@ -170,21 +165,6 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Manuais {periodText}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
-                <FileText className="h-4 w-4 text-info" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-info">
-                  {isLoadingSolicitacoes ? "..." : solicitacoesCount}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Registradas {periodText}
                 </p>
               </CardContent>
             </Card>
