@@ -88,6 +88,7 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
   });
 
   const periodText = viewMode === 'daily' ? `para ${displayDate}` : `para ${format(dateObj, "MM/yyyy")}`;
+  const isAdminOrTriagem = profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM';
 
   return (
     <div className="space-y-4">
@@ -156,53 +157,55 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
 
       {/* Bottom Row */}
       <div className="flex justify-center">
-        <div className="grid w-full gap-4 md:grid-cols-2 lg:w-auto lg:grid-cols-3">
-          <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Expontâneos (Manual)</CardTitle>
-              <PlusCircle className="h-4 w-4 text-info" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-info">
-                {isLoadingExpontaneos ? "..." : expontaneosCount}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Manuais {periodText}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
-              <FileText className="h-4 w-4 text-info" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-info">
-                {isLoadingSolicitacoes ? "..." : solicitacoesCount}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Registradas {periodText}
-              </p>
-            </CardContent>
-          </Card>
-
-          {(profile?.role === 'ADMIN' || profile?.role === 'TRIAGEM') && (
-            <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
+        <div className={`w-full ${isAdminOrTriagem ? 'lg:w-3/4' : 'lg:w-1/2'}`}>
+          <div className={`grid gap-4 md:grid-cols-2 ${isAdminOrTriagem ? 'lg:grid-cols-3' : 'lg:grid-cols-2'}`}>
+            <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Pendências de Nº de Chamado</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-destructive" />
+                <CardTitle className="text-sm font-medium">Expontâneos (Manual)</CardTitle>
+                <PlusCircle className="h-4 w-4 text-info" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-destructive">
-                  {isLoadingPendencias ? "..." : pendenciasProcesso}
+                <div className="text-2xl font-bold text-info">
+                  {isLoadingExpontaneos ? "..." : expontaneosCount}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Atendimentos expontâneos sem Nº
+                  Manuais {periodText}
                 </p>
               </CardContent>
             </Card>
-          )}
+
+            <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Total de Solicitações</CardTitle>
+                <FileText className="h-4 w-4 text-info" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-info">
+                  {isLoadingSolicitacoes ? "..." : solicitacoesCount}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Registradas {periodText}
+                </p>
+              </CardContent>
+            </Card>
+
+            {isAdminOrTriagem && (
+              <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Pendências de Nº de Chamado</CardTitle>
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">
+                    {isLoadingPendencias ? "..." : pendenciasProcesso}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Atendimentos expontâneos sem Nº
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>
