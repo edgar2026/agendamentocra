@@ -53,18 +53,20 @@ const DashboardPanel = () => {
         </CardHeader>
       </Card>
       
-      <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
+      <div>
+        <h2 className="text-xl font-bold tracking-tight mb-4">Resumo do Período</h2>
+        <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
+      </div>
       
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 space-y-8">
-          <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
-            <SolicitacaoChart selectedDate={formattedDate} viewMode={viewMode} />
+      <div>
+        <h2 className="text-xl font-bold tracking-tight mb-4">Visualizações Gráficas</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
           </div>
-        </div>
-        <div className="space-y-8">
           <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} />
+          <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
+          <SolicitacaoChart selectedDate={formattedDate} viewMode={viewMode} />
           <AttendantGuicheList />
         </div>
       </div>
