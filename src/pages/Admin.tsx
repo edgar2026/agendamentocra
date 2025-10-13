@@ -1,11 +1,8 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AtendenteTable } from "@/components/admin/AtendenteTable";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
 import { ExportHistorico } from "@/components/admin/ExportHistorico";
 import { ArchiveHistory } from "@/components/admin/ArchiveHistory";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
-
-const queryClient = new QueryClient();
 
 const AdminPanel = () => {
   return (
@@ -32,10 +29,6 @@ const AdminPanel = () => {
   );
 };
 
-const Admin = () => (
-  <QueryClientProvider client={queryClient}>
-    <AdminPanel />
-  </QueryClientProvider>
-);
+const Admin = () => <AdminPanel />;
 
 export default Admin;

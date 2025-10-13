@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Agendamento } from "@/types";
@@ -8,8 +8,6 @@ import { EditHistoricoDialog } from "@/components/historico/EditHistoricoDialog"
 import { Loader2, SearchX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
-
-const queryClient = new QueryClient();
 
 const FiltrarHistoricoPanel = () => {
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
@@ -80,10 +78,6 @@ const FiltrarHistoricoPanel = () => {
   );
 };
 
-const FiltrarHistorico = () => (
-  <QueryClientProvider client={queryClient}>
-    <FiltrarHistoricoPanel />
-  </QueryClientProvider>
-);
+const FiltrarHistorico = () => <FiltrarHistoricoPanel />;
 
 export default FiltrarHistorico;

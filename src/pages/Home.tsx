@@ -1,7 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Agendamento, Atendente } from "@/types";
 import { getColumns } from "@/components/agendamentos/columns";
 import { DataTable } from "@/components/agendamentos/data-table";
@@ -26,10 +26,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
-const queryClient = new QueryClient();
-
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const today = format(new Date(), "yyyy-MM-dd"); // Data atual para o botão de importação
   const [isAddAgendamentoDialogOpen, setIsAddAgendamentoDialogOpen] = useState(false);
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
@@ -85,18 +84,17 @@ const AgendamentosPanel = () => {
     staleTime: Infinity,
   });
 
-  const { data: triageAttendants } = useQuery<Array<{ name: string, guiche: string | null }>>({
-    queryKey: ["triageAttendants"],
+  const { data: triageUsers } = useQuery<Array<{ first_name: string | null, last_name: string | null }>>({
+    queryKey: ["triageUsers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("atendentes")
-        .select("name, guiche")
-        .eq("guiche", "TRIAGEM")
-        .order("name", { ascending: true });
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("role", "TRIAGEM")
+        .order("first_name", { ascending: true });
       if (error) throw new Error(error.message);
       return data || [];
     },
-    staleTime: 5 * 60 * 1000,
   });
 
   const archiveMutation = useMutation({
@@ -162,11 +160,14 @@ const AgendamentosPanel = () => {
   };
 
   const triageAttendantNames = useMemo(() => {
-    if (triageAttendants && triageAttendants.length > 0) {
-      return triageAttendants.map(att => att.name).join(', ');
+    if (triageUsers && triageUsers.length > 0) {
+      return triageUsers
+        .map(user => `${user.first_name || ''} ${user.last_name || ''}`.trim().toUpperCase())
+        .filter(name => name)
+        .join(', ');
     }
     return null;
-  }, [triageAttendants]);
+  }, [triageUsers]);
 
   const canManageData = useMemo(() => {
     if (!profile) return false;
@@ -286,10 +287,6 @@ const AgendamentosPanel = () => {
   );
 }
 
-const Home = () => (
-  <QueryClientProvider client={queryClient}>
-    <AgendamentosPanel />
-  </QueryClientProvider>
-);
+const Home = () => <AgendamentosPanel />;
 
 export default Home;

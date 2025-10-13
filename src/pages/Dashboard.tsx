@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DashboardCards } from "@/components/dashboard/DashboardCards";
 import { ServiceTypeChart } from "@/components/dashboard/ServiceTypeChart";
 import { AppointmentsTrendChart } from "@/components/dashboard/AppointmentsTrendChart";
@@ -14,8 +13,6 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { RankingPendenciasAtendentes } from "@/components/admin/RankingPendenciasAtendentes";
-
-const queryClient = new QueryClient();
 
 const DashboardPanel = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -88,10 +85,6 @@ const DashboardPanel = () => {
   );
 };
 
-const Dashboard = () => (
-  <QueryClientProvider client={queryClient}>
-    <DashboardPanel />
-  </QueryClientProvider>
-);
+const Dashboard = () => <DashboardPanel />;
 
 export default Dashboard;

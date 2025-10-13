@@ -68,6 +68,7 @@ export function UserRoleDialog({ profile, open, onOpenChange }: UserRoleDialogPr
     onSuccess: () => {
       toast.success("Função do usuário atualizada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["triageUsers"] });
       onOpenChange(false);
     },
     onError: (error) => {

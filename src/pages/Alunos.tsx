@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Search, User, Users } from "lucide-react";
 import { AlunoHistoricoDialog } from "@/components/alunos/AlunoHistoricoDialog";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
-
-const queryClient = new QueryClient();
 
 interface AlunoInfo {
   nome_aluno: string;
@@ -127,10 +125,6 @@ const AlunosPanel = () => {
   );
 }
 
-const Alunos = () => (
-  <QueryClientProvider client={queryClient}>
-    <AlunosPanel />
-  </QueryClientProvider>
-);
+const Alunos = () => <AlunosPanel />;
 
 export default Alunos;
