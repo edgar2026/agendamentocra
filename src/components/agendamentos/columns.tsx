@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { AtendenteSelectCell } from "./AtendenteSelectCell"
+import { SolicitacaoSelectCell } from "./SolicitacaoSelectCell" // Importando o novo componente
 import { format } from "date-fns";
 
 const StatusBadge = ({ status }: { status: AgendamentoStatus }) => {
@@ -162,6 +163,12 @@ export const getColumns = (
   {
     accessorKey: "solicitacao_aluno",
     header: "Solicitação do Aluno",
+    cell: ({ row }) => (
+      <SolicitacaoSelectCell
+        agendamento={row.original}
+        onUpdate={onUpdate}
+      />
+    ),
   },
   {
     id: "actions",
