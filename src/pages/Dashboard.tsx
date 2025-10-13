@@ -3,7 +3,7 @@ import { ServiceTypeChart } from "@/components/dashboard/ServiceTypeChart";
 import { AppointmentsTrendChart } from "@/components/dashboard/AppointmentsTrendChart";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useState } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { TopAttendantsList } from "@/components/dashboard/TopAttendantsList";
 import { ServiceTypeRankingList } from "@/components/dashboard/ServiceTypeRankingList";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -32,7 +32,7 @@ const DashboardPanel = () => {
   return (
     <div className="space-y-8">
       <PinkOctoberBanner />
-      <Card className="mb-4 shadow-sm">
+      <Card className="shadow-sm">
         <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <CardTitle className="text-lg font-semibold flex-shrink-0">Seleção de Período</CardTitle>
           <div className="flex items-center gap-4">
@@ -47,7 +47,7 @@ const DashboardPanel = () => {
             <DatePicker
               date={selectedDate}
               setDate={setSelectedDate}
-              placeholder={viewMode === 'daily' ? "Selecione a data do Dashboard" : "Selecione o mês do Dashboard"}
+              placeholder={viewMode === 'daily' ? "Selecione a data" : "Selecione o mês"}
             />
           </div>
         </CardHeader>
@@ -55,41 +55,47 @@ const DashboardPanel = () => {
       
       <DashboardCards selectedDate={formattedDate} viewMode={viewMode} />
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
-        <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
-        <SolicitacaoChart selectedDate={formattedDate} viewMode={viewMode} />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="xl:col-span-2 space-y-8">
+          <AppointmentsTrendChart selectedDate={formattedDate} viewMode={viewMode} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <ServiceTypeChart selectedDate={formattedDate} viewMode={viewMode} />
+            <SolicitacaoChart selectedDate={formattedDate} viewMode={viewMode} />
+          </div>
+        </div>
+        <div className="space-y-8">
+          <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} />
+          <AttendantGuicheList />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-        <TopAttendantsList
-          title={`Ranking de Atendentes ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
-          viewMode={viewMode}
-          selectedDate={selectedDate}
-          emptyMessage={`Nenhum atendente registrou atendimentos ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
-        />
-        <ServiceTypeRankingList
-          title={`Ranking de Atendimentos por Tipo ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
-          viewMode={viewMode}
-          selectedDate={selectedDate}
-          emptyMessage={`Nenhum tipo de atendimento registrado ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
-        />
-        <SolicitacaoRankingList
-          title={`Ranking de Solicitações ${viewMode === 'daily' ? 'do Dia' : 'do Mês'} (${viewMode === 'daily' ? format(parseISO(formattedDate), "dd/MM/yyyy") : format(parseISO(formattedDate), "MM/yyyy")})`}
-          viewMode={viewMode}
-          selectedDate={selectedDate}
-          emptyMessage={`Nenhuma solicitação registrada ${viewMode === 'daily' ? 'neste dia' : 'neste mês'}.`}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <AttendancePieChart selectedDate={formattedDate} viewMode={viewMode} />
-        <AttendantGuicheList />
+      <div>
+        <h2 className="text-xl font-bold tracking-tight mb-4">Rankings do Período</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <TopAttendantsList
+            title="Atendentes"
+            viewMode={viewMode}
+            selectedDate={selectedDate}
+            emptyMessage="Nenhum atendente registrou atendimentos."
+          />
+          <ServiceTypeRankingList
+            title="Tipos de Atendimento"
+            viewMode={viewMode}
+            selectedDate={selectedDate}
+            emptyMessage="Nenhum tipo de atendimento registrado."
+          />
+          <SolicitacaoRankingList
+            title="Solicitações"
+            viewMode={viewMode}
+            selectedDate={selectedDate}
+            emptyMessage="Nenhuma solicitação registrada."
+          />
+        </div>
       </div>
 
       {profile?.role === 'ADMIN' && (
         <div>
-          <h2 className="text-2xl font-bold tracking-tight mb-2">Monitoramento de Qualidade de Dados</h2>
+          <h2 className="text-xl font-bold tracking-tight mb-4">Monitoramento de Qualidade de Dados</h2>
           <RankingPendenciasAtendentes />
         </div>
       )}

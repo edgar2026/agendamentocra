@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, Label } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 import { format, parseISO } from "date-fns";
 import { Loader2 } from "lucide-react";
 
@@ -71,9 +71,9 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
         <CardHeader>
           <CardTitle>Taxa de Comparecimento</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-[250px]">
+        <CardContent className="flex items-center justify-center h-[300px]">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <p className="ml-2 text-muted-foreground">Carregando dados de comparecimento...</p>
+          <p className="ml-2 text-muted-foreground">Carregando dados...</p>
         </CardContent>
       </Card>
     );
@@ -85,7 +85,7 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
         <CardHeader>
           <CardTitle>Taxa de Comparecimento</CardTitle>
         </CardHeader>
-        <CardContent className="text-red-500">
+        <CardContent className="text-red-500 h-[300px]">
           Erro ao carregar dados: {error.message}
         </CardContent>
       </Card>
@@ -101,28 +101,27 @@ export function AttendancePieChart({ selectedDate, viewMode }: AttendancePieChar
       </CardHeader>
       <CardContent className="pt-2">
         {data && data.length === 0 ? (
-          <div className="flex items-center justify-center h-[250px] text-muted-foreground">
+          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
             Nenhum agendamento registrado {periodText}.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={80}
+                outerRadius={110}
                 fill="#8884d8"
                 dataKey="value"
                 nameKey="name"
-                label={({ name, percentage }) => `${name}: ${percentage}`}
               >
                 {data?.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value, name, props) => [`${props.payload.percentage}`, name]} />
+              <Tooltip formatter={(value, name, props) => [`${props.payload.value} (${props.payload.percentage})`, name]} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
