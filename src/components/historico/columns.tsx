@@ -28,7 +28,7 @@ export const getHistoricoColumns = (
     ),
   },
   {
-    accessorKey: "matricula", // Adicionando a coluna de Matrícula
+    accessorKey: "matricula",
     header: "Matrícula",
   },
   {
@@ -41,13 +41,17 @@ export const getHistoricoColumns = (
         const [year, month, day] = dateString.split('-');
         return `${day}/${month}/${year}`;
       } catch (e) {
-        return dateString; // Fallback para o formato original em caso de erro
+        return dateString;
       }
     },
   },
   {
     accessorKey: "tipo_atendimento",
     header: "Atendimento",
+  },
+  {
+    accessorKey: "solicitacao_aluno",
+    header: "Solicitação do Aluno",
   },
   {
     accessorKey: "atendente",

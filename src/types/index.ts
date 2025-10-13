@@ -21,6 +21,7 @@ export interface Agendamento {
   observacoes?: string;
   status_atendimento?: string; // Este campo agora será apenas o status de atendimento (AGENDADO, COMPARECEU, NAO_COMPARECEU)
   origem_agendamento?: OrigemAgendamento; // Novo campo para a origem do agendamento
+  solicitacao_aluno?: string; // Novo campo para a solicitação do aluno
 }
 
 export interface Atendente {

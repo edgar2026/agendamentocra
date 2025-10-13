@@ -44,6 +44,10 @@ export const getAlunoHistoricoColumns = (): ColumnDef<Agendamento>[] => ([
     header: "Atendimento",
   },
   {
+    accessorKey: "solicitacao_aluno",
+    header: "Solicitação do Aluno",
+  },
+  {
     accessorKey: "atendente",
     header: "Atendente",
   },

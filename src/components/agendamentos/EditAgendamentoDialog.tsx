@@ -33,6 +33,7 @@ const editAgendamentoSchema = z.object({
   data_agendamento: z.string().optional(),
   horario: z.string().optional(),
   tipo_atendimento: z.string().optional(),
+  solicitacao_aluno: z.string().optional(), // Adicionado solicitacao_aluno
   atendente: z.string().optional(),
   guiche: z.string().optional(),
   processo_id: z.string().optional(),
@@ -41,6 +42,19 @@ const editAgendamentoSchema = z.object({
 });
 
 type EditAgendamentoFormData = z.infer<typeof editAgendamentoSchema>;
+
+const solicitacoesOptions = [
+  "HISTORICO",
+  "TRANCAMENTO",
+  "CANCELAMENTO",
+  "BOLETO",
+  "REMATRICULA",
+  "REINGRESSO",
+  "SOLICITAÇÕES DE PÓS",
+  "RECLAMAÇÃO",
+  "PROBLEMA NO PORTAL DO ALUNO",
+  "OUTROS",
+];
 
 interface EditAgendamentoDialogProps {
   agendamento: Agendamento | null;
@@ -92,6 +106,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
         data_agendamento: agendamento.data_agendamento || "",
         horario: agendamento.horario || "",
         tipo_atendimento: agendamento.tipo_atendimento || "",
+        solicitacao_aluno: agendamento.solicitacao_aluno || "",
         atendente: agendamento.atendente ? atendentes?.find(att => att.name === agendamento.atendente)?.id : "",
         guiche: agendamento.guiche || "",
         processo_id: agendamento.processo_id || "",
@@ -133,10 +148,9 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
     },
     onSuccess: (data) => {
       toast.success("Agendamento atualizado com sucesso!");
-      onUpdate(data); // Optimistic update
+      onUpdate(data);
       queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypes"] });
-      // Invalidate dashboard queries for the current day
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
@@ -144,8 +158,7 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       queryClient.invalidateQueries({ queryKey: ["serviceTypeData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["topAttendants", 'daily', today] });
       queryClient.invalidateQueries({ queryKey: ["serviceTypeRanking", 'daily', today] });
-      // queryClient.invalidateQueries({ queryKey: ["appointmentSourceData", today, 'daily'] }); // Removido: Invalida o novo gráfico de origem
-      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] }); // Invalida o novo gráfico de comparecimento
+      queryClient.invalidateQueries({ queryKey: ["attendancePieChartData", today, 'daily'] });
       onOpenChange(false);
     },
     onError: (error) => {
@@ -164,12 +177,12 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
       data_agendamento: data.data_agendamento,
       horario: data.horario,
       tipo_atendimento: data.tipo_atendimento ? data.tipo_atendimento.toUpperCase() : undefined,
+      solicitacao_aluno: data.solicitacao_aluno,
       atendente: selectedAttendantName,
       guiche: data.guiche,
       processo_id: data.processo_id,
       observacoes: data.observacoes,
       status_atendimento: data.status_atendimento,
-      // origem_agendamento is intentionally not updated here, it should remain its initial value
     };
 
     updateAgendamentoMutation.mutate(updatedFields);
@@ -243,6 +256,27 @@ export function EditAgendamentoDialog({ agendamento, open, onOpenChange, onUpdat
                     </SelectItem>
                   ))
                 )}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="solicitacao_aluno" className="text-right">
+              Solicitação
+            </Label>
+            <Select
+              onValueChange={(value) => setValue("solicitacao_aluno", value)}
+              value={watch("solicitacao_aluno")}
+            >
+              <SelectTrigger className="col-span-3">
+                <SelectValue placeholder="Selecione a solicitação" />
+              </SelectTrigger>
+              <SelectContent>
+                {solicitacoesOptions.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {option}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
