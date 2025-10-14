@@ -8,7 +8,6 @@ const pageTitles: { [key: string]: string } = {
   "/admin": "Painel Administrativo",
   "/filtrar-historico": "Histórico de espontâneo sem nº do chamado",
   "/alunos": "Pesquisar Aluno",
-  "/leads": "Gestão de Leads",
 };
 
 export function Layout() {
