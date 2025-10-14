@@ -7,6 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Search, User, Users } from "lucide-react";
 import { AlunoHistoricoDialog } from "@/components/alunos/AlunoHistoricoDialog";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
+import { DatePicker } from "@/components/ui/date-picker";
+import { format, parseISO } from "date-fns";
+import { toast } from "sonner";
+import { DataTable } from "@/components/agendamentos/data-table";
+import { getConsultaColumns } from "@/components/alunos/consulta-columns";
+import { Agendamento } from "@/types";
 
 interface AlunoInfo {
   nome_aluno: string;
@@ -15,32 +21,67 @@ interface AlunoInfo {
 
 const AlunosPanel = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [submittedSearch, setSubmittedSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [submittedSearch, setSubmittedSearch] = useState<{ type: 'aluno' | 'data' | null; value: string }>({ type: null, value: '' });
   const [selectedAluno, setSelectedAluno] = useState<AlunoInfo | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: alunos, isLoading, error, isFetching } = useQuery<AlunoInfo[]>({
-    queryKey: ["alunosSearch", submittedSearch],
+  const { data: searchResults, isLoading, error, isFetching } = useQuery<{
+    type: 'aluno' | 'data';
+    data: AlunoInfo[] | Agendamento[];
+  } | null>({
+    queryKey: ["consultasSearch", submittedSearch],
     queryFn: async () => {
-      if (!submittedSearch || submittedSearch.length < 3) {
-        return [];
+      if (!submittedSearch.type || !submittedSearch.value) {
+        return null;
       }
 
-      // Usando a nova função RPC para busca unificada
-      const { data, error } = await supabase.rpc('search_aluno_historico_completo', {
-        search_term: submittedSearch
-      });
+      if (submittedSearch.type === 'aluno') {
+        if (submittedSearch.value.length < 3) return { type: 'aluno', data: [] };
+        const { data, error } = await supabase.rpc('search_aluno_historico_completo', {
+          search_term: submittedSearch.value
+        });
+        if (error) throw new Error(`Erro na busca por aluno: ${error.message}`);
+        return { type: 'aluno', data: data || [] };
+      }
 
-      if (error) throw new Error(`Erro na busca unificada: ${error.message}`);
+      if (submittedSearch.type === 'data') {
+        const date = submittedSearch.value;
+        const [
+          { data: agendamentosData, error: agendamentosError },
+          { data: historicoData, error: historicoError },
+          { data: arquivoData, error: arquivoError }
+        ] = await Promise.all([
+          supabase.from("agendamentos").select("*").eq("data_agendamento", date),
+          supabase.from("agendamentos_historico").select("*").eq("data_agendamento", date),
+          supabase.from("agendamentos_arquivo").select("*").eq("data_agendamento", date)
+        ]);
+
+        if (agendamentosError) throw new Error(`Erro ao buscar em agendamentos: ${agendamentosError.message}`);
+        if (historicoError) throw new Error(`Erro ao buscar no histórico: ${historicoError.message}`);
+        if (arquivoError) throw new Error(`Erro ao buscar no arquivo: ${arquivoError.message}`);
+
+        const combinedData = [...(agendamentosData || []), ...(historicoData || []), ...(arquivoData || [])];
+        combinedData.sort((a, b) => (a.horario || "00:00").localeCompare(b.horario || "00:00"));
+        return { type: 'data', data: combinedData };
+      }
       
-      return data || [];
+      return null;
     },
-    enabled: submittedSearch.length >= 3,
+    enabled: !!submittedSearch.type,
   });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittedSearch(searchTerm);
+    if (selectedDate) {
+      setSubmittedSearch({ type: 'data', value: format(selectedDate, "yyyy-MM-dd") });
+      setSearchTerm('');
+    } else if (searchTerm.length >= 3) {
+      setSubmittedSearch({ type: 'aluno', value: searchTerm });
+      setSelectedDate(undefined);
+    } else {
+      toast.warning("Por favor, digite pelo menos 3 caracteres ou selecione uma data.");
+    }
   };
 
   const handleSelectAluno = (aluno: AlunoInfo) => {
@@ -48,25 +89,39 @@ const AlunosPanel = () => {
     setIsDialogOpen(true);
   };
 
+  const columns = getConsultaColumns();
+
   return (
     <div className="space-y-6">
       <PinkOctoberBanner />
       <Card>
         <CardHeader>
-          <CardTitle>Pesquisar Aluno</CardTitle>
+          <CardTitle>Consultar Atendimentos</CardTitle>
           <CardDescription>
-            Digite o nome ou a matrícula do aluno para ver seu histórico completo de atendimentos (incluindo dados arquivados).
+            Pesquise por nome/matrícula para ver o histórico de um aluno, ou por data para ver todos os atendimentos de um dia específico.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSearch} className="flex items-center gap-2">
+          <form onSubmit={handleSearch} className="flex flex-wrap items-center gap-4">
             <Input
-              placeholder="Digite o nome ou matrícula (mín. 3 caracteres)"
+              placeholder="Digite o nome ou matrícula (mín. 3)"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value) setSelectedDate(undefined);
+              }}
               className="max-w-sm"
             />
-            <Button type="submit" disabled={isFetching || searchTerm.length < 3}>
+            <span className="text-muted-foreground">OU</span>
+            <DatePicker 
+              date={selectedDate} 
+              setDate={(date) => {
+                setSelectedDate(date);
+                if (date) setSearchTerm('');
+              }} 
+              placeholder="Selecione uma data" 
+            />
+            <Button type="submit" disabled={isFetching || (!selectedDate && searchTerm.length < 3)}>
               {isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
               Pesquisar
             </Button>
@@ -76,37 +131,45 @@ const AlunosPanel = () => {
 
       <div>
         {isLoading && <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /><p className="ml-2">Buscando...</p></div>}
-        {error && <p className="text-red-500">Erro ao buscar alunos: {error.message}</p>}
-        {alunos && submittedSearch && (
+        {error && <p className="text-red-500">Erro na busca: {error.message}</p>}
+        
+        {searchResults && submittedSearch.type && (
           <Card>
             <CardHeader>
               <CardTitle>Resultados da Busca</CardTitle>
-              <CardDescription>{alunos.length} aluno(s) encontrado(s) para "{submittedSearch}".</CardDescription>
+              <CardDescription>
+                {searchResults.data.length} registro(s) encontrado(s) para 
+                {submittedSearch.type === 'aluno' ? ` "${submittedSearch.value}"` : ` a data ${format(parseISO(submittedSearch.value), 'dd/MM/yyyy')}`}.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              {alunos.length > 0 ? (
-                <ul className="space-y-2">
-                  {alunos.map((aluno, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleSelectAluno(aluno)}
-                      className="flex items-center justify-between p-3 rounded-md bg-muted/50 hover:bg-accent cursor-pointer transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <User className="h-5 w-5 text-primary" />
-                        <div>
-                          <p className="font-semibold">{aluno.nome_aluno}</p>
-                          {aluno.matricula && <p className="text-sm text-muted-foreground">Matrícula: {aluno.matricula}</p>}
+              {searchResults.data.length > 0 ? (
+                searchResults.type === 'aluno' ? (
+                  <ul className="space-y-2">
+                    {(searchResults.data as AlunoInfo[]).map((aluno, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleSelectAluno(aluno)}
+                        className="flex items-center justify-between p-3 rounded-md bg-muted/50 hover:bg-accent cursor-pointer transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <User className="h-5 w-5 text-primary" />
+                          <div>
+                            <p className="font-semibold">{aluno.nome_aluno}</p>
+                            {aluno.matricula && <p className="text-sm text-muted-foreground">Matrícula: {aluno.matricula}</p>}
+                          </div>
                         </div>
-                      </div>
-                      <Button variant="outline" size="sm">Ver Histórico</Button>
-                    </li>
-                  ))}
-                </ul>
+                        <Button variant="outline" size="sm">Ver Histórico</Button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <DataTable columns={columns} data={searchResults.data as Agendamento[]} />
+                )
               ) : (
                 <div className="text-center text-muted-foreground p-8">
                   <Users className="mx-auto h-12 w-12 mb-4" />
-                  <p>Nenhum aluno encontrado.</p>
+                  <p>Nenhum resultado encontrado.</p>
                 </div>
               )}
             </CardContent>
