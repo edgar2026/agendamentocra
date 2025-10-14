@@ -109,6 +109,7 @@ const AgendamentosPanel = () => {
       toast.success(data.message || "Agendamentos arquivados e lista limpa!");
       refetch(); // Refetch todos os agendamentos para atualizar a lista
       queryClient.invalidateQueries({ queryKey: ["agendamentos"] });
+      queryClient.invalidateQueries({ queryKey: ["historico-pendente"] }); // <-- ADICIONADO AQUI
       // Invalida as queries do dashboard para o dia atual, pois os dados foram movidos
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
