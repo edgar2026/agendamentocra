@@ -5,13 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Users } from "lucide-react";
 import { Atendente } from "@/types";
 
+interface DisplayAtendente extends Atendente {
+  displayValue: string;
+}
+
 export function AttendantGuicheList() {
-  const { data: atendentes, isLoading, error } = useQuery<Atendente[]>({
+  const { data: atendentes, isLoading, error } = useQuery<DisplayAtendente[]>({
     queryKey: ["atendentes"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("atendentes").select("*").order("name", { ascending: true });
-      if (error) throw new Error(error.message);
-      return data || [];
+      const { data: atendentesData, error: atendentesError } = await supabase
+        .from("atendentes")
+        .select("*")
+        .order("name", { ascending: true });
+      if (atendentesError) throw new Error(atendentesError.message);
+
+      const { data: profilesData, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, role")
+        .eq("role", "TRIAGEM");
+      if (profilesError) throw new Error(profilesError.message);
+
+      const triagemUserIds = new Set(profilesData?.map(p => p.id));
+
+      const displayData = (atendentesData || []).map(att => {
+        const isTriagem = att.user_id && triagemUserIds.has(att.user_id);
+        const displayValue = isTriagem ? 'TRIAGEM' : att.guiche || "Não atribuído";
+        return { ...att, displayValue };
+      });
+
+      return displayData;
     },
   });
 
@@ -50,13 +72,13 @@ export function AttendantGuicheList() {
         <CardTitle className="text-sm font-medium">Atendentes e Guichês</CardTitle>
         <Users className="h-4 w-4 text-primary" />
       </CardHeader>
-      <CardContent className="pt-0"> {/* Ajustado pt-0 */}
+      <CardContent className="pt-0">
         {atendentes && atendentes.length > 0 ? (
-          <ul className="space-y-1"> {/* Reduzido o espaçamento entre os itens */}
+          <ul className="space-y-1">
             {atendentes.map((attendant) => (
-              <li key={attendant.id} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30"> {/* Reduzido gap e padding */}
+              <li key={attendant.id} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30">
                 <span className="font-semibold text-foreground flex-grow">{attendant.name}</span>
-                <span className="text-primary font-bold">{attendant.guiche || "Não atribuído"}</span> {/* Adicionado font-bold */}
+                <span className="text-primary font-bold">{attendant.displayValue}</span>
               </li>
             ))}
           </ul>

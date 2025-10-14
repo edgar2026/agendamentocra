@@ -29,6 +29,7 @@ export interface Atendente {
   name: string;
   guiche?: string; // Adicionado o campo guiche
   created_at: string;
+  user_id?: string;
 }
 
 export interface ServiceType {

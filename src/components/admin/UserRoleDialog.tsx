@@ -26,7 +26,7 @@ import {
 import { Profile, UserRole } from "@/types";
 
 const roleSchema = z.object({
-  role: z.enum(["ADMIN", "ATENDENTE", "TRIAGEM"]),
+  role: z.enum(["ADMIN", "ATENDENTE", "TRIAGEM", "GESTOR"]),
 });
 
 type RoleFormData = z.infer<typeof roleSchema>;
@@ -69,6 +69,7 @@ export function UserRoleDialog({ profile, open, onOpenChange }: UserRoleDialogPr
       toast.success("Função do usuário atualizada com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["profiles"] });
       queryClient.invalidateQueries({ queryKey: ["triageUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["atendentes"] });
       onOpenChange(false);
     },
     onError: (error) => {
