@@ -37,7 +37,7 @@ export interface ServiceType {
   created_at: string;
 }
 
-export type UserRole = 'ADMIN' | 'ATENDENTE' | 'TRIAGEM'; // Definindo os possíveis papéis de usuário
+export type UserRole = 'ADMIN' | 'ATENDENTE' | 'TRIAGEM' | 'GESTOR'; // Adicionado GESTOR
 
 export interface Profile {
   id: string;
@@ -51,4 +51,47 @@ export interface Profile {
 export interface AttendantPerformance {
   atendente: string;
   count: number;
+}
+
+// --- NEW CRM TYPES ---
+
+export type LeadStatus =
+  | 'NOVO'
+  | 'EM_ATENDIMENTO'
+  | 'INTERESSADO'
+  | 'VISITA_AGENDADA'
+  | 'INSCRITO'
+  | 'MATRICULADO'
+  | 'PERDIDO';
+
+export type InteractionChannel = 'WHATSAPP' | 'TELEFONE' | 'EMAIL' | 'PRESENCIAL';
+
+export interface Lead {
+  id: string;
+  created_at: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  cpf?: string;
+  course?: string;
+  modality?: string;
+  turn?: string;
+  origin?: string;
+  campaign?: string;
+  unit?: string;
+  status: LeadStatus;
+  observations?: string;
+  user_id?: string; // Attendant assigned
+  last_contact_date?: string;
+  follow_up_date?: string;
+}
+
+export interface Interaction {
+  id: string;
+  created_at: string;
+  lead_id: string;
+  user_id: string;
+  channel?: InteractionChannel;
+  description: string;
+  status_after_contact?: LeadStatus;
 }

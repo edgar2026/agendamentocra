@@ -5,6 +5,7 @@ import Admin from "./pages/Admin";
 import Dashboard from "./pages/Dashboard";
 import FiltrarHistorico from "./pages/FiltrarHistorico";
 import Alunos from "./pages/Alunos";
+import Leads from "./pages/Leads";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "sonner";
 import { useAuth } from "./contexts/AuthContext";
@@ -36,10 +37,14 @@ function App() {
         <Route element={session ? <Layout /> : <Navigate to="/login" />}>
           <Route path="/" element={<Home />} />
           
-          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM']} />}>
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'ATENDENTE', 'TRIAGEM', 'GESTOR']} />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/filtrar-historico" element={<FiltrarHistorico />} />
             <Route path="/alunos" element={<Alunos />} />
+          </Route>
+
+          <Route element={<RoleGuard allowedRoles={['ADMIN', 'GESTOR', 'ATENDENTE']} />}>
+            <Route path="/leads" element={<Leads />} />
           </Route>
           
           <Route element={<RoleGuard allowedRoles={['ADMIN']} />}>
