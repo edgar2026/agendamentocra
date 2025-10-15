@@ -124,13 +124,27 @@ export function ServiceTypeChart({ selectedDate, viewMode }: ServiceTypeChartPro
               margin={{
                 top: 5,
                 right: 30,
-                left: 20,
+                left: 10, // Reduzido o left para compensar o aumento da largura do YAxis
                 bottom: 5,
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" allowDecimals={false} />
-              <YAxis type="category" dataKey="tipo_atendimento" width={120} />
+              <YAxis 
+                type="category" 
+                dataKey="tipo_atendimento" 
+                width={150} // Aumentado para 150px
+                tick={{ fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                // Adiciona o ajuste de texto para rótulos longos
+                tickFormatter={(value) => {
+                  if (value.length > 20) {
+                    return value.substring(0, 18) + '...';
+                  }
+                  return value;
+                }}
+              />
               <Tooltip />
               <Legend />
               <Bar dataKey="count" fill="hsl(var(--primary))" name="Quantidade" />
