@@ -101,6 +101,9 @@ export function SolicitacaoChart({ selectedDate, viewMode }: SolicitacaoChartPro
   }
 
   const periodText = viewMode === 'daily' ? `para ${format(dateObj, "dd/MM/yyyy")}` : `para ${format(dateObj, "MM/yyyy")}`;
+  
+  // Calcula a altura dinâmica: 40px por item + 50px de margem/padding
+  const dynamicHeight = data && data.length > 0 ? Math.max(250, data.length * 40 + 50) : 250;
 
   return (
     <Card>
@@ -113,7 +116,7 @@ export function SolicitacaoChart({ selectedDate, viewMode }: SolicitacaoChartPro
             Nenhuma solicitação registrada {periodText}.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={250}>
+          <ResponsiveContainer width="100%" height={dynamicHeight}>
             <BarChart
               data={data}
               layout="vertical"
