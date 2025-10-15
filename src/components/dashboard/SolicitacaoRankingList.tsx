@@ -81,12 +81,12 @@ export function SolicitacaoRankingList({ title, viewMode, selectedDate, emptyMes
 
   if (isLoading) {
     return (
-      <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
+      <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[150px]">
-          <Loader2 className="h-6 w-6 animate-spin text-info" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
           <p className="ml-2 text-muted-foreground">Carregando...</p>
         </CardContent>
       </Card>
@@ -95,7 +95,7 @@ export function SolicitacaoRankingList({ title, viewMode, selectedDate, emptyMes
 
   if (error) {
     return (
-      <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
+      <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
         </CardHeader>
@@ -107,7 +107,7 @@ export function SolicitacaoRankingList({ title, viewMode, selectedDate, emptyMes
   }
 
   return (
-    <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
+    <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -120,7 +120,7 @@ export function SolicitacaoRankingList({ title, viewMode, selectedDate, emptyMes
                   <span className="font-bold w-6 text-center">{index + 1}.</span>
                   {item.solicitacao_aluno}
                 </span>
-                <span className="text-info font-bold">{item.count} solicitações</span>
+                <span className="text-primary font-bold">{item.count} solicitações</span>
               </li>
             ))}
           </ul>

@@ -129,7 +129,7 @@ export function SolicitacaoChart({ selectedDate, viewMode }: SolicitacaoChartPro
               <YAxis type="category" dataKey="solicitacao_aluno" width={120} />
               <Tooltip />
               <Legend />
-              <Bar dataKey="count" fill="hsl(var(--info))" name="Quantidade" />
+              <Bar dataKey="count" fill="hsl(var(--primary))" name="Quantidade" />
             </BarChart>
           </ResponsiveContainer>
         )}
