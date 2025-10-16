@@ -5,10 +5,9 @@ import { Agendamento } from "@/types";
 import { DataTable } from "@/components/agendamentos/data-table";
 import { getHistoricoColumns } from "@/components/historico/columns";
 import { EditHistoricoDialog } from "@/components/historico/EditHistoricoDialog";
-import { Loader2, SearchX } from "lucide-react";
+import { Loader2, SearchX, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
-import { Badge } from "@/components/ui/badge";
 
 const FiltrarHistoricoPanel = () => {
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
@@ -38,15 +37,26 @@ const FiltrarHistoricoPanel = () => {
   return (
     <div className="space-y-6">
       <PinkOctoberBanner />
+
+      <Card className="shadow-elevated border-l-4 border-destructive">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total de Pendências</CardTitle>
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-4xl font-bold text-destructive">
+            {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : agendamentos?.length ?? 0}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Atendimentos espontâneos sem Nº do Chamado registrado.
+          </p>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            Histórico de espontâneo sem nº do chamado
-            {!isLoading && agendamentos && (
-              <Badge variant="destructive" className="text-base">
-                {agendamentos.length}
-              </Badge>
-            )}
+          <CardTitle>
+            Lista de Atendimentos Pendentes
           </CardTitle>
           <CardDescription>
             Aqui estão listados todos os atendimentos espontâneos (manuais) do histórico que não possuem um número de chamado (processo) associado.
