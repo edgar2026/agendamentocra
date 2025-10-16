@@ -96,6 +96,8 @@ export function EditHistoricoDialog({ agendamento, open, onOpenChange }: EditHis
     onSuccess: () => {
       toast.success("Registro do histórico atualizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["historico-pendente"] });
+      queryClient.invalidateQueries({ queryKey: ["rankingPendenciasAtendentes"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboardPendenciasProcesso"] });
       onOpenChange(false);
     },
     onError: (error) => {

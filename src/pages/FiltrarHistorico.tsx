@@ -8,6 +8,7 @@ import { EditHistoricoDialog } from "@/components/historico/EditHistoricoDialog"
 import { Loader2, SearchX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
+import { Badge } from "@/components/ui/badge";
 
 const FiltrarHistoricoPanel = () => {
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
@@ -39,7 +40,14 @@ const FiltrarHistoricoPanel = () => {
       <PinkOctoberBanner />
       <Card>
         <CardHeader>
-          <CardTitle>Histórico de espontâneo sem nº do chamado</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Histórico de espontâneo sem nº do chamado
+            {!isLoading && agendamentos && (
+              <Badge variant="destructive" className="text-base">
+                {agendamentos.length}
+              </Badge>
+            )}
+          </CardTitle>
           <CardDescription>
             Aqui estão listados todos os atendimentos espontâneos (manuais) do histórico que não possuem um número de chamado (processo) associado.
             Utilize a ação de editar para adicionar o número faltante.
