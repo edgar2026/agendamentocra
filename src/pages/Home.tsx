@@ -193,22 +193,22 @@ const AgendamentosPanel = () => {
           <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/10 text-primary">
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/30 text-primary">
             <CalendarDays className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Total</span>
             <span className="text-xl font-bold">{totalAgendamentosCount}</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/10 text-success">
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/30 text-success">
             <CheckCircle2 className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Compareceu</span>
             <span className="text-xl font-bold">{compareceuCount}</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/10 text-destructive">
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/30 text-destructive">
             <XCircle className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Não Compareceu</span>
             <span className="text-xl font-bold">{naoCompareceuCount}</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/10 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/30 text-muted-foreground">
             <ClockIcon className="h-5 w-5 mb-1" />
             <span className="text-sm font-medium">Pendente</span>
             <span className="text-xl font-bold">{pendenteCount}</span>
