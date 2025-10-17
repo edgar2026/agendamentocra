@@ -17,7 +17,7 @@ export function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header title={title} />
-      <main className="flex-1 overflow-auto bg-background p-4 md:p-6">
+      <main className="flex-1 bg-background p-4 md:p-6">
         <Outlet />
       </main>
       <Footer />
