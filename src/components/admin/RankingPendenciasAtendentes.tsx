@@ -90,15 +90,13 @@ export function RankingPendenciasAtendentes() {
                     >
                       <div className="flex items-center gap-3">
                         <span className="font-bold text-lg w-8 text-center flex justify-center items-center">
-                          {/* Mantém o ícone de alerta em vermelho (destructive) para indicar o problema */}
                           {isTop && <AlertTriangle className="h-6 w-6 text-destructive" />}
                           {isBottom && <CheckCircle2 className="h-6 w-6 text-success" />}
                           {!isTop && !isBottom && `${index + 1}.`}
                         </span>
                         <span className="font-medium">{item.atendente}</span>
                       </div>
-                      {/* ALTERADO: text-destructive para text-primary */}
-                      <span className="font-bold text-primary text-lg">
+                      <span className="font-bold text-destructive text-lg">
                         {item.count}
                         <span className="text-sm font-normal ml-1">pendência(s)</span>
                       </span>

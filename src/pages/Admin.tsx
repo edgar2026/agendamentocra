@@ -2,10 +2,12 @@ import { AtendenteTable } from "@/components/admin/AtendenteTable";
 import { UserManagementTable } from "@/components/admin/UserManagementTable";
 import { ExportHistorico } from "@/components/admin/ExportHistorico";
 import { ArchiveHistory } from "@/components/admin/ArchiveHistory";
+import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const AdminPanel = () => {
   return (
     <div className="space-y-12">
+      <PinkOctoberBanner />
       <div>
         <h2 className="text-2xl font-bold tracking-tight mb-2">Operações de Dados</h2>
         <div className="space-y-6">

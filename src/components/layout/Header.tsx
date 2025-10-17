@@ -22,7 +22,7 @@ export function Header({ title }: HeaderProps) {
   const { profile } = useAuth();
 
   return (
-    <header className="fixed top-0 z-30 w-full flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shadow-sm">
+    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 shadow-sm">
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-2 font-semibold text-primary">
           <BarChart2 className="h-6 w-6 text-primary" />
