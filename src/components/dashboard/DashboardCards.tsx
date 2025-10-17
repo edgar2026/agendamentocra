@@ -89,55 +89,55 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
     <div className="space-y-4">
       {/* Top Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Card Total Agendamentos - Usando gradiente na borda */}
-        <Card className="shadow-elevated transition-all duration-300 hover:scale-[1.02] border-l-4 border-transparent" style={{ borderImage: 'var(--gradient-primary) 1', borderImageSlice: 1 }}>
+        {/* Card Total Agendamentos */}
+        <Card className="shadow-elevated bg-primary text-primary-foreground transition-all duration-300 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total de Agendamentos</CardTitle>
-            <CalendarDays className="h-4 w-4 text-primary" />
+            <CalendarDays className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-2xl font-bold">
               {isLoadingTotal ? "..." : totalAgendamentos}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs opacity-80">
               Agendamentos {periodText}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-elevated border-l-4 border-success transition-all duration-300 hover:scale-[1.02]">
+        <Card className="shadow-elevated bg-success text-success-foreground transition-all duration-300 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Comparecimentos</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-success" />
+            <CheckCircle2 className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">
+            <div className="text-2xl font-bold">
               {isLoadingComparecimentos ? "..." : comparecimentos}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs opacity-80">
               Confirmados {periodText}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
+        <Card className="shadow-elevated bg-destructive text-destructive-foreground transition-all duration-300 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Faltas</CardTitle>
-            <XCircle className="h-4 w-4 text-destructive" />
+            <XCircle className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">
+            <div className="text-2xl font-bold">
               {isLoadingFaltas ? "..." : faltas}
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs opacity-80">
               Não comparecidos {periodText}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
+        <Card className="shadow-elevated bg-card border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Agendados (Planilha)</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Agendados (Planilha)</CardTitle>
             <CalendarDays className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
@@ -155,25 +155,25 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
       <div className="flex justify-center">
         <div className={`w-full ${isAdminOrTriagem ? 'lg:w-1/2' : 'lg:w-1/4'}`}>
           <div className={`grid gap-4 ${isAdminOrTriagem ? 'md:grid-cols-2' : 'md:grid-cols-1'}`}>
-            <Card className="shadow-elevated border-l-4 border-info transition-all duration-300 hover:scale-[1.02]">
+            <Card className="shadow-elevated bg-info text-info-foreground transition-all duration-300 hover:scale-[1.02]">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Expontâneos (Manual)</CardTitle>
-                <PlusCircle className="h-4 w-4 text-info" />
+                <PlusCircle className="h-4 w-4" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-info">
+                <div className="text-2xl font-bold">
                   {isLoadingExpontaneos ? "..." : expontaneosCount}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs opacity-80">
                   Manuais {periodText}
                 </p>
               </CardContent>
             </Card>
 
             {isAdminOrTriagem && (
-              <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
+              <Card className="shadow-elevated bg-card border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">Pendências de Nº de Chamado</CardTitle>
+                  <CardTitle className="text-sm font-medium text-foreground">Pendências de Nº de Chamado</CardTitle>
                   <AlertTriangle className="h-4 w-4 text-destructive" />
                 </CardHeader>
                 <CardContent>
