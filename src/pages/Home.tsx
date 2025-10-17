@@ -193,25 +193,29 @@ const AgendamentosPanel = () => {
           <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
         </CardHeader>
         <CardContent className="pt-2 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-primary/30 text-primary">
-            <CalendarDays className="h-5 w-5 mb-1" />
+          {/* Card Total */}
+          <div className="flex flex-col items-center justify-center py-4 px-3 rounded-lg bg-primary text-primary-foreground shadow-md">
+            <CalendarDays className="h-6 w-6 mb-1" />
             <span className="text-sm font-medium">Total</span>
-            <span className="text-xl font-bold">{totalAgendamentosCount}</span>
+            <span className="text-2xl font-bold">{totalAgendamentosCount}</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-success/30 text-success">
-            <CheckCircle2 className="h-5 w-5 mb-1" />
+          {/* Card Compareceu */}
+          <div className="flex flex-col items-center justify-center py-4 px-3 rounded-lg bg-success text-success-foreground shadow-md">
+            <CheckCircle2 className="h-6 w-6 mb-1" />
             <span className="text-sm font-medium">Compareceu</span>
-            <span className="text-xl font-bold">{compareceuCount}</span>
+            <span className="text-2xl font-bold">{compareceuCount}</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-destructive/30 text-destructive">
-            <XCircle className="h-5 w-5 mb-1" />
+          {/* Card Não Compareceu */}
+          <div className="flex flex-col items-center justify-center py-4 px-3 rounded-lg bg-destructive text-destructive-foreground shadow-md">
+            <XCircle className="h-6 w-6 mb-1" />
             <span className="text-sm font-medium">Não Compareceu</span>
-            <span className="text-xl font-bold">{naoCompareceuCount}</span>
+            <span className="text-2xl font-bold">{naoCompareceuCount}</span>
           </div>
-          <div className="flex flex-col items-center justify-center py-2 px-3 rounded-md bg-muted/30 text-muted-foreground">
-            <ClockIcon className="h-5 w-5 mb-1" />
-            <span className="text-sm font-medium">Pendente</span>
-            <span className="text-xl font-bold">{pendenteCount}</span>
+          {/* Card Pendente (Mantendo o fundo do card, mas destacando o texto) */}
+          <div className="flex flex-col items-center justify-center py-4 px-3 rounded-lg bg-card text-foreground border border-muted">
+            <ClockIcon className="h-6 w-6 mb-1 text-primary" />
+            <span className="text-sm font-medium text-muted-foreground">Pendente</span>
+            <span className="text-2xl font-bold text-primary">{pendenteCount}</span>
           </div>
         </CardContent>
       </Card>
