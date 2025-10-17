@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Users } from "lucide-react";
 import { Atendente } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface DisplayAtendente extends Atendente {
   displayValue: string;
@@ -79,7 +80,14 @@ export function AttendantGuicheList() {
             {atendentes.map((attendant) => (
               <li key={attendant.id} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30">
                 <span className="font-semibold text-foreground flex-grow">{attendant.name}</span>
-                <span className="text-primary font-bold">{attendant.displayValue}</span>
+                <span 
+                  className={cn(
+                    "font-bold",
+                    attendant.displayValue === 'Não atribuído' ? 'text-muted-foreground' : 'text-primary'
+                  )}
+                >
+                  {attendant.displayValue}
+                </span>
               </li>
             ))}
           </ul>
