@@ -17,7 +17,8 @@ export function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header title={title} />
-      <main className="flex-1 bg-background p-4 md:p-6">
+      {/* Adiciona padding superior e inferior para compensar o header (h-16) e o footer (aprox h-12) fixos */}
+      <main className="flex-1 bg-background p-4 md:p-6 pt-20 pb-16">
         <Outlet />
       </main>
       <Footer />
