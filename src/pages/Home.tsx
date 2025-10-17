@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BlueNovemberBanner } from "@/components/layout/BlueNovemberBanner";
+import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const AgendamentosPanel = () => {
   const { profile } = useAuth();
@@ -177,7 +177,7 @@ const AgendamentosPanel = () => {
 
   return (
     <div className="space-y-4 relative">
-      <BlueNovemberBanner />
+      <PinkOctoberBanner />
       {triageAttendantNames && (
         <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
           <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É:&nbsp;

@@ -7,7 +7,7 @@ import { getHistoricoColumns } from "@/components/historico/columns";
 import { EditHistoricoDialog } from "@/components/historico/EditHistoricoDialog";
 import { Loader2, SearchX, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BlueNovemberBanner } from "@/components/layout/BlueNovemberBanner";
+import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 
 const FiltrarHistoricoPanel = () => {
   const [editingAgendamento, setEditingAgendamento] = useState<Agendamento | null>(null);
@@ -36,7 +36,7 @@ const FiltrarHistoricoPanel = () => {
 
   return (
     <div className="space-y-6">
-      <BlueNovemberBanner />
+      <PinkOctoberBanner />
 
       <Card className="shadow-elevated border-l-4 border-destructive">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
