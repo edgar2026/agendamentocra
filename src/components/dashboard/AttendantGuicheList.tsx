@@ -29,6 +29,7 @@ export function AttendantGuicheList() {
 
       const displayData = (atendentesData || []).map(att => {
         const isTriagem = att.user_id && triagemUserIds.has(att.user_id);
+        // Se for triagem, exibe TRIAGEM. Caso contrário, exibe o guiche ou "Não atribuído".
         const displayValue = isTriagem ? 'TRIAGEM' : att.guiche || "Não atribuído";
         return { ...att, displayValue };
       });
@@ -39,7 +40,7 @@ export function AttendantGuicheList() {
 
   if (isLoading) {
     return (
-      <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
+      <Card className="shadow-elevated bg-card border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Atendentes e Guichês</CardTitle>
           <Users className="h-4 w-4 text-primary" />
@@ -54,7 +55,7 @@ export function AttendantGuicheList() {
 
   if (error) {
     return (
-      <Card className="shadow-elevated border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
+      <Card className="shadow-elevated bg-card border-l-4 border-destructive transition-all duration-300 hover:scale-[1.02]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Atendentes e Guichês</CardTitle>
           <Users className="h-4 w-4 text-destructive" />
@@ -67,7 +68,7 @@ export function AttendantGuicheList() {
   }
 
   return (
-    <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
+    <Card className="shadow-elevated bg-card border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">Atendentes e Guichês</CardTitle>
         <Users className="h-4 w-4 text-primary" />
