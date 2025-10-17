@@ -79,10 +79,12 @@ export function AttendantGuicheList() {
           <ul className="space-y-1">
             {atendentes.map((attendant) => (
               <li key={attendant.id} className="flex items-center gap-x-2 text-base py-1 px-2 rounded-md bg-muted/30">
-                <span className="font-semibold text-foreground flex-grow">{attendant.name}</span>
+                {/* Nome do Atendente: Usando text-foreground e font-medium para padronizar */}
+                <span className="font-medium text-foreground flex-grow">{attendant.name}</span>
+                {/* Guichê/Triagem: Usando text-primary ou text-muted-foreground */}
                 <span 
                   className={cn(
-                    "font-bold",
+                    "font-bold text-base", // Garante que o tamanho da fonte seja consistente
                     attendant.displayValue === 'Não atribuído' ? 'text-muted-foreground' : 'text-primary'
                   )}
                 >
