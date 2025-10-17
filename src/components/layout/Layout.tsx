@@ -17,8 +17,8 @@ export function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header title={title} />
-      {/* Aumentado pt-20 para pt-28 para compensar o Header (h-16) + PinkOctoberBanner (aprox. h-12) */}
-      <main className="flex-1 bg-background p-4 md:p-6 pt-28 pb-16">
+      {/* Aumentado pt-28 para pt-32 (8rem) para compensar o Header (h-16) + PinkOctoberBanner (aprox. h-12 + mb-6) */}
+      <main className="flex-1 bg-background p-4 md:p-6 pt-32 pb-16">
         <Outlet />
       </main>
       <Footer />
