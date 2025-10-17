@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Search, User, Users } from "lucide-react";
 import { AlunoHistoricoDialog } from "@/components/alunos/AlunoHistoricoDialog";
-import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 import { DatePicker } from "@/components/ui/date-picker";
 import { format, parseISO } from "date-fns";
 import { toast } from "sonner";
@@ -93,7 +92,6 @@ const AlunosPanel = () => {
 
   return (
     <div className="space-y-6">
-      <PinkOctoberBanner />
       <Card>
         <CardHeader>
           <CardTitle>Consultar Atendimentos</CardTitle>

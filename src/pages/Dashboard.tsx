@@ -10,7 +10,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AttendantGuicheList } from "@/components/dashboard/AttendantGuicheList";
 import { AttendancePieChart } from "@/components/dashboard/AttendancePieChart";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { PinkOctoberBanner } from "@/components/layout/PinkOctoberBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { RankingPendenciasAtendentes } from "@/components/admin/RankingPendenciasAtendentes";
 import { SolicitacaoChart } from "@/components/dashboard/SolicitacaoChart";
@@ -31,7 +30,6 @@ const DashboardPanel = () => {
 
   return (
     <div className="space-y-8">
-      <PinkOctoberBanner />
       <Card className="shadow-sm">
         <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <CardTitle className="text-lg font-semibold flex-shrink-0">Seleção de Período</CardTitle>
