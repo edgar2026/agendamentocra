@@ -89,7 +89,8 @@ export function DashboardCards({ selectedDate, viewMode }: DashboardCardsProps) 
     <div className="space-y-4">
       {/* Top Row */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-elevated border-l-4 border-primary transition-all duration-300 hover:scale-[1.02]">
+        {/* Card Total Agendamentos - Usando gradiente na borda */}
+        <Card className="shadow-elevated transition-all duration-300 hover:scale-[1.02] border-l-4 border-transparent" style={{ borderImage: 'var(--gradient-primary) 1', borderImageSlice: 1 }}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Total de Agendamentos</CardTitle>
             <CalendarDays className="h-4 w-4 text-primary" />
