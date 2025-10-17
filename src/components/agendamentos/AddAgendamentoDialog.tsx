@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Agendamento, Atendente, ServiceType } from "@/types";
 
 const agendamentoSchema = z.object({
@@ -34,7 +35,7 @@ const agendamentoSchema = z.object({
   data_agendamento: z.string().optional(),
   horario: z.string().optional(),
   tipo_atendimento: z.string().optional(),
-  solicitacao_aluno: z.string().optional(), // Adicionado solicitacao_aluno
+  solicitacao_aluno: z.string().optional(),
   atendente: z.string().optional(),
   guiche: z.string().optional(),
   status_atendimento: z.string().optional(),
@@ -73,9 +74,13 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
     reset,
     setValue,
     watch,
+    control, // Adicionado control para usar Controller
     formState: { errors },
   } = useForm<AgendamentoFormData>({
     resolver: zodResolver(agendamentoSchema),
+    defaultValues: {
+      data_agendamento: today, // Define a data padrão como hoje
+    }
   });
 
   const { data: atendentes, isLoading: isLoadingAtendentes } = useQuery<Atendente[]>({
@@ -100,9 +105,20 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
 
   useEffect(() => {
     if (!open) {
-      reset();
+      reset({
+        data_agendamento: today, // Reseta para a data de hoje ao fechar
+        horario: "",
+        nome_aluno: "",
+        matricula: "",
+        tipo_atendimento: "",
+        solicitacao_aluno: "",
+        atendente: "",
+        guiche: "",
+        processo_id: "",
+        observacoes: "",
+      });
     }
-  }, [open, reset]);
+  }, [open, reset, today]);
 
   useEffect(() => {
     if (selectedAtendenteId && atendentes) {
@@ -134,6 +150,7 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
       reset();
       onOpenChange(false);
 
+      // Invalida queries do dashboard para atualização imediata
       queryClient.invalidateQueries({ queryKey: ["attendanceData", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardTotalAgendamentos", today, 'daily'] });
       queryClient.invalidateQueries({ queryKey: ["dashboardComparecimentos", today, 'daily'] });
@@ -163,7 +180,8 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
     const finalData = {
       ...data,
       user_id: user.id,
-      data_agendamento: data.data_agendamento || todayDate,
+      // Garante que a data seja formatada corretamente (já deve estar se veio do DatePicker)
+      data_agendamento: data.data_agendamento || todayDate, 
       horario: data.horario || currentTime,
       status: "AGENDADO",
       status_atendimento: "EXPONTANEO",
@@ -209,19 +227,36 @@ export function AddAgendamentoDialog({ open, onOpenChange }: AddAgendamentoDialo
               onChange={handleInputChange}
             />
           </div>
+          
+          {/* Campo de Data usando DatePicker */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="data_agendamento" className="text-right">
               Data
             </Label>
-            <Input id="data_agendamento" type="date" {...register("data_agendamento")} className="col-span-3" />
+            <Controller
+              control={control}
+              name="data_agendamento"
+              render={({ field }) => (
+                <div className="col-span-3">
+                  <DatePicker 
+                    date={field.value ? parseISO(field.value) : undefined}
+                    setDate={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : undefined)}
+                    placeholder="Selecione a data"
+                  />
+                </div>
+              )}
+            />
             {errors.data_agendamento && <p className="col-span-4 text-red-500 text-sm text-right">{errors.data_agendamento.message}</p>}
           </div>
+
+          {/* Campo de Horário usando Input type="time" */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="horario" className="text-right">
               Horário
             </Label>
             <Input id="horario" type="time" {...register("horario")} className="col-span-3" />
           </div>
+
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tipo_atendimento" className="text-right">
               Atendimento
