@@ -179,7 +179,7 @@ const AgendamentosPanel = () => {
     <div className="space-y-4 relative">
       <PinkOctoberBanner />
       {triageAttendantNames && (
-        <div className="mb-4 p-4 bg-primary text-white rounded-lg shadow-sm">
+        <div className="mb-4 p-4 bg-gradient-primary text-white rounded-lg shadow-lg">
           <p className="text-lg font-semibold">QUEM ESTÁ NA TRIAGEM HOJE É:&nbsp;
             <span className="font-bold">
               {triageAttendantNames}
