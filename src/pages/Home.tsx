@@ -188,7 +188,7 @@ const AgendamentosPanel = () => {
         </div>
       )}
 
-      <Card className="mb-4 shadow-sm">
+      <Card className="mb-4 shadow-elevated border-l-4 border-transparent transition-all duration-300 hover:scale-[1.02]" style={{ borderImage: 'var(--gradient-primary) 1', borderImageSlice: 1 }}>
         <CardHeader className="pb-0 flex flex-row items-center justify-between">
           <CardTitle className="text-lg font-semibold">Todos os Agendamentos</CardTitle>
         </CardHeader>

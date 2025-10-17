@@ -38,13 +38,13 @@ const FiltrarHistoricoPanel = () => {
     <div className="space-y-6">
       <PinkOctoberBanner />
 
-      <Card className="shadow-elevated border-l-4 border-destructive">
+      <Card className="shadow-elevated border-l-4 border-transparent transition-all duration-300 hover:scale-[1.02]" style={{ borderImage: 'var(--gradient-primary) 1', borderImageSlice: 1 }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total de Pendências</CardTitle>
           <AlertTriangle className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-4xl font-bold text-destructive">
+          <div className="text-4xl font-bold text-primary">
             {isLoading ? <Loader2 className="h-8 w-8 animate-spin" /> : agendamentos?.length ?? 0}
           </div>
           <p className="text-xs text-muted-foreground">
